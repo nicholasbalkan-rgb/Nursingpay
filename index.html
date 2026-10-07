@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BC Nursing Pay Calculator</title>
+<meta name="theme-color" content="#0f766e">
+<style>
+:root{--bg:#f6f7f8;--card:#fff;--ink:#16202a;--mute:#5d6b78;--line:#dde2e7;--acc:#0f766e;--acc2:#b45309;--bad:#b91c1c;--warn:#a16207;--ok:#15803d;--chip:#eef2f5}
+@media(prefers-color-scheme:dark){:root{--bg:#10151a;--card:#182027;--ink:#e8edf1;--mute:#93a1ad;--line:#2a343d;--acc:#2dd4bf;--acc2:#f59e0b;--bad:#f87171;--warn:#facc15;--ok:#4ade80;--chip:#222c35}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:14px 16px 0;max-width:900px;margin:auto}
+h1{font-size:19px;margin:0 0 2px}
+.sub{color:var(--mute);font-size:12.5px}
+nav{display:flex;gap:4px;overflow-x:auto;padding:10px 16px;max-width:900px;margin:auto;position:sticky;top:0;background:var(--bg);z-index:5}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:999px;white-space:nowrap;cursor:pointer;font:inherit;font-size:13.5px}
+nav button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+main{max-width:900px;margin:auto;padding:0 16px 80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px}
+.card h2{font-size:15px;margin:0 0 10px}
+.card h3{font-size:13.5px;margin:12px 0 6px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:6px 0}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--mute);min-width:110px;flex:1}
+label.f.inl{flex-direction:row;align-items:center;gap:8px;flex:0 0 auto}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;min-width:0;width:100%}
+input[type=checkbox]{width:auto}
+textarea{min-height:70px;font-family:ui-monospace,Consolas,monospace;font-size:13px}
+button.b{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit;font-size:13.5px}
+button.b.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.b.d{color:var(--bad)}
+button.b.s{padding:4px 9px;font-size:12.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--bg);border-radius:10px;padding:10px}
+.stat b{display:block;font-size:19px}.stat span{font-size:12px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.tot td{font-weight:700;border-bottom:0}
+.shift{border:1px solid var(--line);border-radius:10px;margin:8px 0;background:var(--card)}
+.shift>.hd{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;cursor:pointer}
+.shift .bd{padding:0 12px 12px}
+.amt{font-weight:700;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;background:var(--chip);border-radius:999px;padding:1px 8px;font-size:12px;margin-right:4px;color:var(--mute)}
+.chip.ok{color:var(--ok)}.chip.bad{color:var(--bad)}.chip.warn{color:var(--warn)}
+.note{font-size:12.5px;color:var(--mute)}
+.warnbox{border-left:4px solid var(--warn);background:var(--chip);padding:8px 10px;border-radius:6px;font-size:13px;margin:8px 0}
+.badbox{border-left-color:var(--bad)}
+.flag{font-size:13px;margin:3px 0}.flag:before{content:"⚑ ";color:var(--warn)}
+.prem{border:1px solid var(--line);border-radius:10px;margin:8px 0;padding:8px 10px}
+.prem.off{opacity:.55}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;z-index:20;padding:12px}
+.modal>div{background:var(--card);border-radius:12px;max-width:720px;width:100%;max-height:88vh;overflow:auto;padding:16px}
+footer{max-width:900px;margin:auto;padding:0 16px 30px;color:var(--mute);font-size:12px}
+svg text{fill:var(--mute);font-size:10px}
+.err{color:var(--bad)}.ok{color:var(--ok)}
+/* ---- Shift Master style ---- */
+:root{--blue:#2563eb;--blue-d:#1d4fd8;--bg:#2563eb;--card:#fff;--ink:#101828;--mute:#667085;--line:#e6e9ef;--chip:#f2f4f8;--tile:#f8f9fc;--acc:#2563eb;--acc-d:#2563eb;--acc2:#e8884a;--ok:#15a06a;--bad:#d1435b;--warn:#c27a10;--sh:0 1px 2px #1018280a}
+@media(prefers-color-scheme:dark){:root{--bg:#1b3a86;--card:#141a24;--ink:#eef1f6;--mute:#98a2b3;--line:#262f3d;--chip:#1d2633;--tile:#18202c;--blue:#4f86f7;--acc:#4f86f7;--acc-d:#3b6fe0;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}}
+body{background:var(--bg);padding:26px;font-family:Inter,"Plus Jakarta Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.frame{display:grid;grid-template-columns:250px 1fr;background:var(--card);border-radius:28px;overflow:hidden;max-width:1400px;margin:0 auto;min-height:calc(100vh - 52px);box-shadow:0 20px 60px -20px #0006}
+aside{padding:20px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;background:var(--card)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;padding:2px 6px 18px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.logo i{font-style:normal;width:36px;height:36px;border-radius:9px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:19px}
+.ng{font-size:12.5px;color:var(--mute);padding:8px 8px 4px;display:flex;justify-content:space-between}
+.nv{display:flex;align-items:center;gap:12px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:12px 14px;border-radius:10px;cursor:pointer;text-align:left;width:100%;transition:background .15s}
+.nv:hover{background:var(--chip)}
+.nv.on{background:var(--blue);color:#fff;font-weight:600}
+.nv .ni{width:22px;text-align:center}
+.aside-foot{margin-top:auto;font-size:12px;color:var(--mute);padding:10px 8px;line-height:1.4}
+.content{min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 28px 16px;border-bottom:1px solid var(--line)}
+.top h1{font-size:23px;font-weight:700;margin:0}
+.top .tr{display:flex;align-items:center;gap:10px}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7aa2ff);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+.estchip{background:var(--chip);border-radius:999px;padding:7px 14px;font-size:12.5px;color:var(--mute)}
+main{max-width:none;margin:0;padding:22px 28px 40px;animation:fade .25s ease;flex:1}
+footer{max-width:none;margin:0;padding:0 28px 22px}
+.welcome{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.welcome h2{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.pnav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px}
+.trio{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:16px;margin-bottom:16px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.tile{background:var(--tile);border-radius:18px;padding:20px;min-width:0;margin-bottom:0}
+.split .tile,.trio .tile{margin:0}
+.tile+.split,.tile+.tile{margin-top:16px}
+.th{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.tile h3{font-size:17px;font-weight:600;margin:12px 0 6px;color:var(--ink);text-transform:none;letter-spacing:0}
+.th h3{margin:0}
+.tile .th+.big{margin-top:6px}
+.big{font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:4px 0 8px}
+.big small{font-size:17px;color:var(--mute);font-weight:600}
+.badge{display:inline-block;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:600}
+.badge.up{background:#dcf6ea;color:#15a06a}.badge.dn{background:#fde1e6;color:#d1435b}
+.vs{font-size:14px;color:var(--ink)}
+.donut{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:center}
+.legend{flex:1;min-width:150px}
+.legend div{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14px}
+.legend i{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+.legend span{flex:1}.legend b{font-weight:600}
+svg text.dc{font-size:30px;font-weight:700;fill:var(--ink)}svg text.ds{font-size:12px;fill:var(--mute)}
+.sech{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px}
+.sech h3{font-size:20px;font-weight:700;margin:0;text-transform:none;letter-spacing:-.01em;color:var(--ink)}
+.stbl{border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.srow{display:grid;grid-template-columns:1.2fr 1fr 1fr .6fr .9fr .9fr 1.1fr;gap:10px;align-items:center;padding:15px 20px;font-size:14.5px;cursor:pointer}
+.srow.shd{background:#e9ecf2;font-weight:600;cursor:default}
+@media(prefers-color-scheme:dark){.srow.shd{background:#1f2937}}
+.sgrp{border-top:1px solid var(--line)}
+.sgrp:first-of-type{border-top:0}
+.sgrp:not(.open) .srow:hover{background:var(--tile)}
+.sgrp.open{background:var(--tile)}
+.sdet{padding:4px 20px 20px}
+.pill{display:inline-block;padding:7px 18px;border-radius:10px;font-size:13.5px;font-weight:500;min-width:96px;text-align:center}
+.pill.ok{background:#dcf6ea;color:#0f8a5a}.pill.warn{background:#fdeccf;color:#a8650b}.pill.bad{background:#fde1e6;color:#c23a52}.pill.blue{background:#dfe9ff;color:#1d4fd8}
+@media(prefers-color-scheme:dark){.pill.ok{background:#12372a;color:#4ade80}.pill.warn{background:#3a2c0f;color:#fbbf24}.pill.bad{background:#3d1a22;color:#f87171}.pill.blue{background:#1b2c55;color:#8fb0ff}.badge.up{background:#12372a}.badge.dn{background:#3d1a22}}
+.ptrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px dashed var(--line)}
+.ptrow .pn{flex:1 1 180px}
+.ptrow select{width:auto;flex:0 0 auto}.ptrow input[type=time]{width:auto}
+.card{background:var(--tile);border:0;border-radius:18px;box-shadow:none;padding:20px;margin:0 0 16px}
+.card h2{font-size:18px;font-weight:700}
+.card h3{font-size:12px;letter-spacing:.08em;font-weight:700;color:var(--mute);text-transform:uppercase}
+.prem{background:var(--card);border-radius:14px}
+input,select,textarea{background:var(--card);border-radius:10px;padding:9px 11px;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--blue);box-shadow:0 0 0 3px #2563eb30}
+button.b{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 18px;font-weight:500;transition:transform .08s,background .15s}
+button.b:hover{background:var(--chip)}button.b:active{transform:scale(.97)}
+button.b.p{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 14px -6px #2563eb99}
+button.b.p:hover{background:var(--blue-d)}
+button.b.s{padding:5px 11px;font-size:12.5px;border-radius:8px}
+button.b:disabled{opacity:.45;cursor:not-allowed}
+input[type=checkbox]{accent-color:var(--blue)}
+.chip.stat{background:#fdeccf;color:#a8650b}
+.hol{background:var(--card)}.hol:has(input:checked){border-color:var(--blue);background:var(--chip)}
+tr.tot td{border-top:2px solid var(--line)}
+.mhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;font-size:12.5px;color:var(--mute);font-weight:600;text-align:center;margin-bottom:6px}
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.mc{background:var(--card);border:1px solid var(--line);border-radius:12px;min-height:92px;padding:6px;display:flex;flex-direction:column;gap:3px;position:relative;min-width:0}
+.mc.empty{background:transparent;border-color:transparent}
+.mc.today{border:2px solid var(--blue)}
+.mc .dn{font-size:12.5px;font-weight:600;color:var(--mute)}
+.mc .hs{position:absolute;top:5px;right:7px;font-style:normal;color:#e8a11e;font-size:13px}
+.mi{display:flex;align-items:center;gap:5px;border:0;background:var(--chip);border-radius:8px;padding:3px 6px;cursor:pointer;font:inherit;color:var(--ink)}
+.mi .ic{font-size:19px;line-height:1}.mi small{font-size:11px;color:var(--mute)}
+.mi:hover{background:#dfe9ff}
+@media(prefers-color-scheme:dark){.mi:hover{background:#1b2c55}}
+@media(max-width:900px){
+  .trio{grid-template-columns:1fr}.split{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  body{padding:0;background:var(--card)}
+  .frame{display:block;border-radius:0;box-shadow:none;min-height:100vh}
+  aside{position:fixed;left:0;right:0;bottom:0;z-index:30;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);overflow-x:auto;gap:2px;background:var(--card)}
+  .logo,.ng,.aside-foot{display:none}
+  .nv{flex-direction:column;gap:2px;font-size:11px;padding:6px 10px;min-width:62px;text-align:center;flex:1 0 auto;width:auto}
+  .nv .ni{font-size:18px}
+  .top{padding:16px}.top h1{font-size:20px}.estchip{display:none}
+  main{padding:16px 16px 100px}footer{padding:0 16px 90px}
+  .hm{display:none}
+  .srow{grid-template-columns:1.2fr 1fr .9fr 1fr;padding:13px 14px;gap:6px;font-size:14px}
+  .pill{padding:5px 8px;min-width:0;font-size:12px}
+  .sdet{padding:4px 14px 16px}
+  .mc{min-height:62px;padding:4px}.mi small{display:none}.mi{padding:2px 4px}
+  .welcome h2{font-size:18px}
+  .welcome .btns{width:100%}.welcome .btns .b{flex:1;padding-left:10px;padding-right:10px}
+  .trio{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -16px 16px;padding:0 16px 6px;scrollbar-width:none}
+  .trio::-webkit-scrollbar{display:none}
+  .trio .tile{flex:0 0 84%;scroll-snap-align:center}
+  .pnav{flex-wrap:nowrap;justify-content:space-between;gap:6px}
+  .pnav b{font-size:13px;text-align:center;flex:1}.pnav .note{display:none}
+  .tile{padding:16px;border-radius:16px}.big{font-size:30px}
+  input,select,textarea{font-size:16px;min-height:44px}
+  input[type=checkbox]{min-height:0;width:20px;height:20px}
+  button.b{min-height:44px}button.b.s{min-height:38px;padding:6px 12px}
+  label.f{min-width:calc(50% - 8px)}
+  label.f.inl{min-width:0;flex:1 1 100%;max-width:100%}
+  label.f.inl input[type=number]{width:90px}
+  .card{padding:16px;border-radius:16px}
+  .nv{min-height:48px}
+  .modal{padding:0;align-items:flex-end}.modal>div{border-radius:18px 18px 0 0;max-height:92vh}
+  .ptrow select,.ptrow input[type=time]{flex:1 1 40%}
+  .sech h3{font-size:18px}
+  .mgrid,.mhead{gap:3px}.mc{border-radius:8px}.mi .ic{font-size:17px}
+  .donut{gap:12px}
+  .hols{grid-template-columns:1fr}
+  .stbl{border-radius:14px}
+  .srow.shd{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){main{animation:none}*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="frame">
+<aside id="side"></aside>
+<div class="content">
+  <div class="top"><h1 id="ptitle">Dashboard</h1><div class="tr"><span class="estchip">Estimates only · payslip is authoritative</span><div class="avatar">RN</div></div></div>
+  <main id="app"><div class="warnbox" id="boot"><b>Loading…</b> If this message stays, the viewer you opened the file in is blocking JavaScript (Files/Quick Look previews, email attachments and chat apps do this). Open the file in Safari or Chrome instead, or host it on GitHub Pages.<noscript><br>JavaScript is turned off in this browser.</noscript></div></main>
+  <footer class="note">All figures are estimates. Premium values and tax figures are starting points: verify them against the current collective agreement, CRA tables and a payslip. Everything runs in this browser.</footer>
+</div>
+</div>
+
+<script>
+window.addEventListener('error',function(e){var m=document.getElementById('app');if(m&&!window.__ok){m.innerHTML='<div class="warnbox badbox"><b>The app hit an error while starting:</b><br>'+String(e.message).replace(/</g,'&lt;')+'<br><small>'+String(e.filename||'').split('/').pop()+':'+e.lineno+'</small></div>'}});
+</script>
+<script>
+'use strict';
+/* ============================ helpers ============================ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const money=n=>{n=Math.round(n*100)/100;return (n<0?'-':'')+'$'+Math.abs(n).toFixed(2)};
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const TAGS=[['stat','Stat holiday'],['shortNotice','Short notice'],['callback','Call-back'],['onCall','On-call']];
+const ymd=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+const parseYmd=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const dayNum=d=>Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
+const fmtDN=n=>new Date(n*864e5).toISOString().slice(0,10);
+const hm=s=>{const [h,m]=String(s||'0:0').split(':').map(Number);return (h||0)*60+(m||0)};
+const num=x=>(x===''||x==null||isNaN(Number(x)))?null:Number(x);
+const fmtT=d=>`${p2(d.getHours())}:${p2(d.getMinutes())}`;
+const fmtD=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+const pget=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const pset=(o,p,v)=>{const ks=p.split('.');let a=o;for(let i=0;i<ks.length-1;i++)a=a[ks[i]];a[ks[ks.length-1]]=v};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const today=()=>ymd(new Date());
+
+/* ============================ defaults ============================ */
+const PRESET=[
+ {id:'shift',name:'Shift premium',on:true,type:'perHour',history:[{from:'2000-01-01',value:2.15}],when:{kind:'always'},appliesOT:false,stacking:'add',regularOnly:true,areaOnly:false,status:'confirmed',notes:'$2.15/hr on straight-time hours worked, regular employees; not on overtime hours or leaves.'},
+ {id:'area',name:'Area premium (OR/PAR/ER/ICU/CCU)',on:true,type:'perHour',history:[{from:'2000-01-01',value:2.00}],when:{kind:'always'},appliesOT:false,stacking:'add',regularOnly:true,areaOnly:true,status:'confirmed',notes:'$2.00/hr for regular RNs/RPNs in qualifying units. Turn on "Qualifying unit" in Settings.'},
+ {id:'weekend',name:'Weekend premium',on:true,type:'perHour',history:[{from:'2000-01-01',value:2.30}],when:{kind:'windows',windows:[{sd:5,st:'23:00',ed:0,et:'23:00'}]},appliesOT:true,stacking:'add',regularOnly:false,areaOnly:false,status:'outdated',notes:'Older agreement: $2.30/hr, Friday 11 pm to Sunday 11 pm. VERIFY.'},
+ {id:'super',name:'Super shift premium',on:true,type:'perHour',history:[{from:'2000-01-01',value:1.00}],when:{kind:'windows',windows:[{sd:5,st:'23:30',ed:6,et:'07:30'},{sd:6,st:'23:30',ed:0,et:'07:30'}]},appliesOT:true,stacking:'add',regularOnly:false,areaOnly:false,status:'outdated',notes:'Older agreement: $1/hr, 11:30 pm to 7:30 am Fri→Sat and Sat→Sun, on top of other premiums. VERIFY.'},
+ {id:'stat',name:'Statutory holiday pay',on:false,type:'multiplier',history:[{from:'2000-01-01',value:''}],when:{kind:'stat'},appliesOT:false,stacking:'add',regularOnly:false,areaOnly:false,status:'lookup',notes:'Not found. Look up in the current agreement, enter the multiplier (e.g. 1.5), then switch on. Tag a shift "Stat holiday" or list dates in Settings.'},
+ {id:'short',name:'Short-notice shift change',on:false,type:'flat',history:[{from:'2000-01-01',value:''}],when:{kind:'tag',tag:'shortNotice'},appliesOT:false,stacking:'add',regularOnly:false,areaOnly:false,status:'verify',notes:'Premium exists (under 48 hours notice); details unconfirmed.'}
+];
+const defaults=()=>({v:1,status:'regular',areaUnit:false,
+ baseHistory:[{from:'2000-01-01',value:0}],holidays:{},
+ breakMin:30,minRest:8,periodStart:'2026-01-05',periodDays:14,statDates:'',
+ ot:{dailyAfter1:'',dailyMult1:'',dailyAfter2:'',dailyMult2:'',weeklyAfter:'',weeklyMult:''},
+ premiums:clone(PRESET).map(p=>Object.assign(p,{uid:p.id})),
+ map:{allTimed:false,keyword:'',codes:'D=07:00-19:00\nN=19:00-07:00'},
+ google:{clientId:'',calId:'primary'},
+ write:{mode:'companion',payCalId:'',titleMode:'icon'},
+ icons:{day:'☀️',eve:'🌆',night:'🌙',stat:'⭐'},
+ ded:{on:true,cppRate:5.95,cppExempt:3500,ympe:74600,cpp2Rate:4,yampe:85000,eiRate:1.63,eiMax:68900,
+  fedBPA:16452,cea:1501,bcBPA:13216,
+  fedTable:'58523=14\n117045=20.5\n181440=26\n258482=29\ninf=33',bcTable:'50363=5.6\n100728=7.7\n115648=10.5\n140430=12.29\n190405=14.7\n265545=16.8\ninf=20.5',
+  taxOverridePct:'',pensionPct:'',unionPct:'',benefits:'',extraTax:'',ytdGross:'',payLag:7,other:[]}
+});
+
+/* ============================ state ============================ */
+const LS='bcpay.settings.v1',LSO='bcpay.overrides.v1',LSI='bcpay.icsurl',LSC='bcpay.checks.v1';
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:v}catch(e){return d}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+function loadS(){try{const j=JSON.parse(lsGet(LS,'null'));if(j){const d=defaults();return Object.assign(d,j,{ot:Object.assign(d.ot,j.ot||{}),map:Object.assign(d.map,j.map||{}),google:Object.assign(d.google,j.google||{}),write:Object.assign(d.write,j.write||{}),ded:Object.assign(d.ded,j.ded||{}),icons:Object.assign(d.icons,j.icons||{})})}}catch(e){}return defaults()}
+let S=loadS();
+S.premiums.forEach(p=>{p.uid=p.uid||p.id||'p'+Math.random().toString(36).slice(2,8)});
+let OV=(()=>{try{return JSON.parse(lsGet(LSO,'{}'))}catch(e){return {}}})();
+let SHIFTS=[],UNCL=[],RES=new Map(),ALL=[];
+let token=null;
+let ui={tab:'pay',off:0,moff:0,showPay:false,open:null,edit:null,modal:null,msg:'',wi:{date:today(),st:'19:00',en:'07:00',brk:30,tags:[]},ps:{date:today(),st:'19:00',en:'07:00',brk:30,tags:[],paid:''}};
+const saveS=()=>lsSet(LS,JSON.stringify(S));
+const saveO=()=>lsSet(LSO,JSON.stringify(OV));
+
+/* ============================ BC statutory holidays ============================ */
+const addD=(d,n)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x};
+const nthDow=(y,m,dow,n)=>new Date(y,m,1+((dow-new Date(y,m,1).getDay()+7)%7)+(n-1)*7);
+function easter(y){
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+    h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),
+    mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  return new Date(y,mo-1,da);
+}
+const HOLS=[
+ ['ny',"New Year's Day",y=>new Date(y,0,1)],
+ ['family','Family Day (3rd Mon Feb)',y=>nthDow(y,1,1,3)],
+ ['gf','Good Friday',y=>addD(easter(y),-2)],
+ ['em','Easter Monday',y=>addD(easter(y),1),'Listed in the nurses\' agreement but verify against your copy'],
+ ['vic','Victoria Day (Mon before May 25)',y=>{const d=new Date(y,4,24);while(d.getDay()!==1)d.setDate(d.getDate()-1);return d}],
+ ['can','Canada Day',y=>new Date(y,6,1)],
+ ['bc','BC Day (1st Mon Aug)',y=>nthDow(y,7,1,1)],
+ ['lab','Labour Day (1st Mon Sep)',y=>nthDow(y,8,1,1)],
+ ['trc','National Day for Truth and Reconciliation',y=>new Date(y,8,30)],
+ ['thx','Thanksgiving (2nd Mon Oct)',y=>nthDow(y,9,1,2)],
+ ['rem','Remembrance Day',y=>new Date(y,10,11)],
+ ['xmas','Christmas Day',y=>new Date(y,11,25)],
+ ['box','Boxing Day',y=>new Date(y,11,26),'Listed in the nurses\' agreement but verify against your copy']
+];
+const _hc=new Map();
+function holidaysOf(y){
+  const key=y+JSON.stringify(S.holidays),hit=_hc.get(key);if(hit)return hit;
+  const m=new Map();HOLS.forEach(([id,name,fn])=>{if(S.holidays[id]!==false)m.set(ymd(fn(y)),name)});
+  _hc.set(key,m);return m;
+}
+const holidayName=ds=>holidaysOf(+ds.slice(0,4)).get(ds)||(String(S.statDates||'').split(/[\s,;]+/).includes(ds)?'Stat holiday':null);
+
+/* ============================ engine ============================ */
+function rateAt(hist,date){
+  const h=(hist||[]).filter(x=>x.from<=date&&num(x.value)!=null).sort((a,b)=>a.from<b.from?-1:1);
+  return h.length?Number(h[h.length-1].value):null;
+}
+function inWindow(w,wm){
+  const s=w.sd*1440+hm(w.st),e=w.ed*1440+hm(w.et);
+  return e>s?(wm>=s&&wm<e):(wm>=s||wm<e);
+}
+function matchPrem(p,t,sh,paidIdx,statSet){
+  const ov=sh.pov&&sh.pov[p.uid];
+  if(ov){
+    if(ov.mode==='off')return false;
+    if(ov.mode==='all')return true;
+    if(ov.mode==='custom'){const tod=t.getHours()*60+t.getMinutes(),s=hm(ov.st),e=hm(ov.en);return e>s?(tod>=s&&tod<e):(tod>=s||tod<e)}
+  }
+  const w=p.when||{};
+  switch(w.kind){
+    case 'always':return true;
+    case 'windows':{const wm=t.getDay()*1440+t.getHours()*60+t.getMinutes();return (w.windows||[]).some(x=>inWindow(x,wm))}
+    case 'stat':return sh.tags.includes('stat')||statSet.has(ymd(t));
+    case 'tag':return sh.tags.includes(w.tag);
+    case 'afterHours':return paidIdx/60>=(num(w.afterHours)??1e9);
+  }
+  return false;
+}
+function calcShift(sh,St,weekMin){
+  const date=ymd(sh.start);
+  const baseC=Math.round((rateAt(St.baseHistory,date)||0)*100);
+  const total=Math.max(0,Math.round((sh.end-sh.start)/60000));
+  const brk=Math.min(Math.max(0,+sh.breakMin||0),total);
+  const brkStart=Math.floor((total-brk)/2);
+  const statSet=new Set(String(St.statDates||'').split(/[\s,;]+/).filter(Boolean));
+  for(const y of new Set([sh.start.getFullYear(),sh.end.getFullYear()]))holidaysOf(y).forEach((n,d)=>statSet.add(d));
+  const prems=St.premiums.filter(p=>p.on&&(!p.regularOnly||St.status==='regular')&&(!p.areaOnly||St.areaUnit))
+    .map(p=>({p,v:rateAt(p.history,date)})).filter(x=>x.v!=null);
+  const ot=St.ot;
+  const tiers=[[num(ot.dailyAfter1),num(ot.dailyMult1)],[num(ot.dailyAfter2),num(ot.dailyMult2)]].filter(t=>t[0]!=null&&t[1]!=null&&t[1]>1);
+  const wkAfter=num(ot.weeklyAfter),wkMult=num(ot.weeklyMult);
+  const ps=dayNum(parseYmd(St.periodStart));
+  const acc=prems.map(()=>({min:0,amt60:0,hit:false}));
+  let paidMin=0,otMin=0,otAmt60=0,maxMult=1;
+  for(let i=0;i<total;i++){
+    if(i>=brkStart&&i<brkStart+brk)continue;
+    const t=new Date(sh.start.getTime()+i*60000);
+    let mult=1;
+    for(const [a,m] of tiers)if(paidMin/60>=a&&m>mult)mult=m;
+    if(wkAfter!=null&&wkMult>1){
+      const wk=Math.floor((dayNum(t)-ps)/7),wm=weekMin.get(wk)||0;
+      if(wm/60>=wkAfter&&wkMult>mult)mult=wkMult;
+      weekMin.set(wk,wm+1);
+    }else{const wk=Math.floor((dayNum(t)-ps)/7);weekMin.set(wk,(weekMin.get(wk)||0)+1)}
+    const isOT=mult>1;
+    if(isOT){otMin++;otAmt60+=baseC*(mult-1);if(mult>maxMult)maxMult=mult}
+    const m=[];
+    prems.forEach((x,k)=>{
+      const p=x.p;if(isOT&&!p.appliesOT)return;
+      if(!matchPrem(p,t,sh,paidMin,statSet))return;
+      if(p.type==='flat'){acc[k].hit=true;acc[k].min++;return}
+      const a=p.type==='multiplier'?baseC*(x.v-1):Math.round(x.v*100);
+      m.push({k,a,rep:p.stacking==='replace'});
+    });
+    let keep=m;
+    const reps=m.filter(z=>z.rep);
+    if(reps.length){const R=Math.max(...reps.map(z=>z.a));keep=m.filter(z=>z.a>=R)}
+    for(const z of keep){acc[z.k].min++;acc[z.k].amt60+=z.a}
+    paidMin++;
+  }
+  const c=x=>Math.round(x/60+1e-9);
+  const lines=[{name:'Base pay',kind:'base',hours:paidMin/60,cents:c(baseC*paidMin)}];
+  if(otMin)lines.push({name:`Overtime (×${maxMult})`,kind:'ot',hours:otMin/60,cents:c(otAmt60)});
+  prems.forEach((x,k)=>{
+    const a=acc[k];if(!a.min)return;
+    const flat=x.p.type==='flat';
+    lines.push({name:x.p.name,kind:'prem',id:x.p.id,hours:a.min/60,cents:flat?Math.round(x.v*100):c(a.amt60)});
+  });
+  const cents=lines.reduce((s,l)=>s+l.cents,0);
+  lines.forEach(l=>l.amount=l.cents/100);
+  return {lines,cents,total:cents/100,paidMin,otMin,baseAmt:lines[0].amount,date};
+}
+function calcShifts(list,St){
+  const sorted=[...list].sort((a,b)=>a.start-b.start),wk=new Map(),res=new Map();
+  for(const sh of sorted)res.set(sh.key,calcShift(sh,St,wk));
+  return res;
+}
+/* ---- deductions (estimate of what reaches the bank account) ---- */
+function parseTab(t){return String(t||'').split(/\n/).map(l=>l.trim().replace(/^(inf|top|max)/i,'1e12').split('=').map(Number)).filter(x=>x.length===2&&x.every(n=>!isNaN(n))).sort((a,b)=>a[0]-b[0])}
+function bracketTax(A,tab){let tax=0,prev=0;for(const [th,r] of tab){if(A>prev)tax+=(Math.min(A,th)-prev)*r/100;prev=th;if(A<=th)break}return tax}
+function netFor(G,startDay,D=S.ded,ytdManual=null){
+  if(!D.on)return null;
+  const L=Math.max(1,+S.periodDays||14),P=Math.max(1,Math.round(365/L));
+  const jan1=Date.UTC(new Date(startDay*864e5).getUTCFullYear(),0,1)/864e5;
+  const elapsed=Math.max(0,Math.floor((startDay-jan1)/L));
+  const ytd=ytdManual!=null?ytdManual:G*elapsed,N=x=>num(x)||0;
+  const cppRate=N(D.cppRate)/100,cppMax=cppRate*(N(D.ympe)-N(D.cppExempt));
+  const cppBefore=Math.min(cppMax,cppRate*Math.max(0,Math.min(ytd,N(D.ympe))-N(D.cppExempt)*elapsed/P));
+  const cpp=Math.max(0,Math.min(cppRate*Math.max(0,G-N(D.cppExempt)/P),cppMax-cppBefore));
+  const c2=x=>N(D.cpp2Rate)/100*Math.max(0,Math.min(x,N(D.yampe))-N(D.ympe));
+  const cpp2=Math.max(0,c2(ytd+G)-c2(ytd));
+  const e=x=>N(D.eiRate)/100*Math.min(x,N(D.eiMax));
+  const ei=Math.max(0,e(ytd+G)-e(ytd));
+  const pension=G*N(D.pensionPct)/100,union=G*N(D.unionPct)/100;
+  const cppEnh=cpp*Math.max(0,cppRate*100-4.95)/(cppRate*100||1),cppBase=cpp-cppEnh;
+  const taxable=Math.max(0,G-pension-union-cppEnh-cpp2),A=taxable*P;
+  const fT=parseTab(D.fedTable),bT=parseTab(D.bcTable);
+  let fed=0,bc=0,tax=0;
+  if(num(D.taxOverridePct)!=null)tax=taxable*N(D.taxOverridePct)/100;
+  else{
+    const fl=(fT[0]?.[1]||0)/100,bl=(bT[0]?.[1]||0)/100,cr=(ei+cppBase)*P;
+    fed=Math.max(0,bracketTax(A,fT)-(N(D.fedBPA)+N(D.cea))*fl-cr*fl)/P;
+    bc=Math.max(0,bracketTax(A,bT)-N(D.bcBPA)*bl-cr*bl)/P;
+  }
+  const extra=N(D.extraTax),c=x=>Math.round(x*100+1e-9)/100;
+  const lines=[];const add=(name,v)=>{v=c(v);if(v>0)lines.push({name,amount:v})};
+  if(num(D.taxOverridePct)!=null)add(`Income tax (${D.taxOverridePct}% flat)`,tax);else{add('Federal income tax',fed);add('BC income tax',bc)}
+  add('Extra tax withheld',extra);add('CPP',cpp);add('CPP2',cpp2);add('EI',ei);
+  add('Pension',pension);add('Union dues',union);add('Benefits',N(D.benefits));
+  (D.other||[]).forEach(o=>add(o.name||'Other',o.type==='pct'?G*N(o.value)/100:N(o.value)));
+  const ded=Math.round(lines.reduce((s,l)=>s+l.amount,0)*100)/100;
+  return {gross:G,lines,ded,net:Math.round((G-ded)*100)/100};
+}
+const eff=sh=>{const o=OV[sh.key]||{};return Object.assign({},sh,{pov:o.prem||{},breakMin:o.breakMin!=null?o.breakMin:sh.breakMin,tags:[...new Set([...sh.tags,...(o.tags||[])])]})};
+
+/* ============================ calendar parsing ============================ */
+function parseICS(text){
+  const lines=text.replace(/\r?\n[ \t]/g,'').split(/\r?\n/),evs=[];let cur=null;
+  const unesc=s=>s.replace(/\\n/gi,'\n').replace(/\\([,;\\])/g,'$1');
+  const dt=(v,params)=>{
+    const m=/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/.exec(v.trim());if(!m)return null;
+    if(m[4]==null)return {d:new Date(+m[1],+m[2]-1,+m[3]),allDay:true};
+    return {d:m[7]?new Date(Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0))):new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)),allDay:false};
+  };
+  for(const ln of lines){
+    if(ln==='BEGIN:VEVENT'){cur={title:'',desc:'',uid:'',recurring:false};continue}
+    if(ln==='END:VEVENT'){if(cur&&cur.start)evs.push(cur);cur=null;continue}
+    if(!cur)continue;
+    const i=ln.indexOf(':');if(i<0)continue;
+    const [name,...params]=ln.slice(0,i).split(';'),val=ln.slice(i+1);
+    if(name==='SUMMARY')cur.title=unesc(val);
+    else if(name==='DESCRIPTION')cur.desc=unesc(val);
+    else if(name==='UID')cur.uid=val;
+    else if(name==='RRULE')cur.recurring=true;
+    else if(name==='DTSTART'){const r=dt(val,params);if(r){cur.start=r.d;cur.allDay=r.allDay}}
+    else if(name==='DTEND'){const r=dt(val,params);if(r)cur.end=r.d}
+  }
+  evs.forEach(e=>{if(!e.end)e.end=e.allDay?new Date(e.start.getTime()+864e5):e.start;e.src='ics';e.uid=e.uid||e.title+e.start.toISOString()});
+  return evs;
+}
+function parseCodes(){
+  return String(S.map.codes||'').split(/\n/).map(l=>{const m=/^\s*([^=]+?)\s*=\s*(\d{1,2}):?(\d{2})\s*[-–]\s*(\d{1,2}):?(\d{2})\s*$/.exec(l);return m?{code:m[1],st:+m[2]*60+ +m[3],en:+m[4]*60+ +m[5]}:null}).filter(Boolean);
+}
+function classify(ev){
+  const t=(ev.title||'').trim(),codes=parseCodes();
+  const anchor=(st,en)=>{const b=new Date(ev.start.getFullYear(),ev.start.getMonth(),ev.start.getDate());
+    const s=new Date(b.getTime()+st*60000),e=new Date(b.getFullYear(),b.getMonth(),b.getDate(),0,en);
+    if(en<=st)e.setDate(e.getDate()+1);return [s,e]};
+  let st,en;
+  const c=codes.find(c=>c.code.toLowerCase()===t.toLowerCase());
+  const m=/^(\d{2}):?(\d{2})\s*[-–]\s*(\d{2}):?(\d{2})$/.exec(t);
+  if(c)[st,en]=anchor(c.st,c.en);
+  else if(m&&+m[1]<24&&+m[3]<24)[st,en]=anchor(+m[1]*60+ +m[2],+m[3]*60+ +m[4]);
+  else if(!ev.allDay&&(S.map.allTimed||(S.map.keyword.trim()&&t.toLowerCase().includes(S.map.keyword.trim().toLowerCase())))){st=ev.start;en=ev.end}
+  else return null;
+  const text=(ev.title+' '+(ev.desc||'')).toLowerCase();
+  const tags=TAGS.map(x=>x[0]).filter(k=>text.includes('#'+k.toLowerCase()));
+  return Object.assign({},ev,{key:ev.uid+'|'+st.toISOString(),start:st,end:en,breakMin:S.breakMin,tags,baseTitle:ev.baseTitle||ev.title});
+}
+function ingest(events,src){
+  const keep=SHIFTS.filter(s=>s.src!==src&&s.src!=='sample');UNCL=UNCL.filter(u=>u.src!==src);
+  const cl=[];
+  for(const ev of events){const s=classify(ev);if(s)cl.push(s);else UNCL.push(ev)}
+  SHIFTS=[...keep,...cl];rebuild();
+}
+function rebuild(){
+  ALL=SHIFTS.map(eff).sort((a,b)=>a.start-b.start);
+  RES=calcShifts(ALL,S);
+  render();
+}
+
+/* ============================ Google ============================ */
+function loadGIS(){return new Promise((ok,no)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return ok();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=ok;s.onerror=()=>no(new Error('Could not load Google sign-in (offline?)'));document.head.appendChild(s)})}
+async function gConnect(){
+  if(!S.google.clientId.trim())throw new Error('Add your Google client ID in Settings first.');
+  await loadGIS();
+  return new Promise((ok,no)=>{
+    const tc=google.accounts.oauth2.initTokenClient({client_id:S.google.clientId.trim(),scope:'https://www.googleapis.com/auth/calendar.events',
+      callback:r=>{if(r.error)no(new Error(r.error));else{token=r.access_token;ok()}}});
+    tc.requestAccessToken({prompt:token?'':'consent'});
+  });
+}
+async function gapi(path,opt={}){
+  if(!token)throw new Error('Not connected to Google. Tap Connect.');
+  const r=await fetch('https://www.googleapis.com/calendar/v3'+path,Object.assign({},opt,{headers:Object.assign({Authorization:'Bearer '+token,'Content-Type':'application/json'},opt.headers||{})}));
+  if(r.status===401)token=null;
+  if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));
+  return r.status===204?null:r.json();
+}
+async function gList(calId,extra=''){
+  const min=new Date(Date.now()-60*864e5).toISOString(),max=new Date(Date.now()+120*864e5).toISOString();
+  let out=[],pt='';
+  do{const j=await gapi(`/calendars/${encodeURIComponent(calId)}/events?singleEvents=true&orderBy=startTime&maxResults=2500&timeMin=${encodeURIComponent(min)}&timeMax=${encodeURIComponent(max)}${extra}${pt?'&pageToken='+pt:''}`);out=out.concat(j.items||[]);pt=j.nextPageToken}while(pt);
+  return out;
+}
+async function gRead(){
+  const items=await gList(S.google.calId||'primary');
+  const evs=items.filter(i=>i.status!=='cancelled'&&!(i.extendedProperties?.private?.bcpaySrc)).map(i=>{
+    const ext=i.extendedProperties?.private||{},allDay=!!i.start.date;
+    return {src:'google',id:i.id,calId:S.google.calId||'primary',uid:i.id,ext,rawDesc:i.description||'',
+      title:ext.bcpayTitle??i.summary??'',curTitle:i.summary||'',desc:i.description||'',allDay,
+      start:allDay?parseYmd(i.start.date):new Date(i.start.dateTime),end:allDay?parseYmd(i.end.date):new Date(i.end.dateTime),recurring:false};
+  });
+  ingest(evs,'google');
+}
+
+/* ============================ write-back ============================ */
+const BLK=/\[BC Pay Calc\][\s\S]*?\[\/BC Pay Calc\]/;
+function payBlock(r){return `[BC Pay Calc]\nEst. ${money(r.total)} · `+r.lines.map(l=>`${l.kind==='ot'?'OT':l.name.replace(/ \(.*\)/,'').replace(' premium','')} ${money(l.amount)}`).join(' · ')+`\n[/BC Pay Calc]`}
+const setBlock=(d,b)=>BLK.test(d)?d.replace(BLK,b):(d?d.replace(/\s+$/,'')+'\n\n':'')+b;
+const stripBlock=d=>d.replace(BLK,'').replace(/\s+$/,'');
+async function planWrites(list){
+  const w=S.write,plan=[];
+  if(!list.length)throw new Error('No Google-sourced shifts to write. Read from Google first.');
+  let ex=new Map();
+  if(w.mode==='companion'){
+    if(!w.payCalId.trim())throw new Error('Set the "Pay" calendar ID in Settings (create a private calendar named Pay in Google Calendar first).');
+    (await gList(w.payCalId.trim(),'&privateExtendedProperty=bcpay%3D1')).forEach(i=>ex.set(i.extendedProperties?.private?.bcpaySrc,i));
+  }
+  for(const sh of list){
+    const r=RES.get(sh.key);if(!r)continue;const blk=payBlock(r);
+    if(w.mode==='companion'){
+      const e=ex.get(sh.key),summary=w.titleMode==='none'?`Pay ${m0(r.total)}`:`${iconFor(sh)} ${m0(r.total)}`,desc=`${sh.baseTitle}\n${blk}`;
+      if(!e)plan.push({sh,action:'create',summary,desc});
+      else if(e.description!==desc||e.summary!==summary)plan.push({sh,action:'update',summary,desc,e});
+      else plan.push({sh,action:'same',summary,desc});
+    }else{
+      const desc=setBlock(sh.rawDesc,blk),title=w.titleMode!=='none'?titleFor(sh,r):null;
+      const changed=desc!==sh.rawDesc||(title!=null&&title!==sh.curTitle);
+      plan.push({sh,action:changed?'update':'same',summary:title,desc});
+    }
+  }
+  return plan;
+}
+async function applyPlan(plan){
+  const w=S.write;let n=0;
+  for(const it of plan){
+    if(it.action==='same')continue;const sh=it.sh;
+    if(w.mode==='companion'){
+      const body={summary:it.summary,description:it.desc,start:{dateTime:sh.start.toISOString()},end:{dateTime:sh.end.toISOString()},extendedProperties:{private:{bcpay:'1',bcpaySrc:sh.key}}};
+      const cal=encodeURIComponent(w.payCalId.trim());
+      if(it.action==='create')await gapi(`/calendars/${cal}/events`,{method:'POST',body:JSON.stringify(body)});
+      else await gapi(`/calendars/${cal}/events/${it.e.id}`,{method:'PATCH',body:JSON.stringify(body)});
+    }else{
+      const ext=Object.assign({},sh.ext,{bcpay:'1'});
+      if(ext.bcpayOrig==null&&sh.rawDesc&&sh.rawDesc.length<=1000)ext.bcpayOrig=sh.rawDesc;
+      const body={description:it.desc,extendedProperties:{private:ext}};
+      if(it.summary!=null){ext.bcpayTitle=sh.baseTitle;body.summary=it.summary}
+      await gapi(`/calendars/${encodeURIComponent(sh.calId)}/events/${sh.id}`,{method:'PATCH',body:JSON.stringify(body)});
+    }
+    n++;
+  }
+  return n;
+}
+async function undoAll(){
+  if(S.write.mode==='companion'){
+    const items=await gList(S.write.payCalId.trim(),'&privateExtendedProperty=bcpay%3D1');
+    for(const i of items)await gapi(`/calendars/${encodeURIComponent(S.write.payCalId.trim())}/events/${i.id}`,{method:'DELETE'});
+    return items.length;
+  }
+  let n=0;
+  for(const sh of SHIFTS.filter(s=>s.src==='google'&&s.ext&&s.ext.bcpay)){
+    const body={description:sh.ext.bcpayOrig!=null?sh.ext.bcpayOrig:stripBlock(sh.rawDesc),extendedProperties:{private:{bcpay:null,bcpayOrig:null,bcpayTitle:null}}};
+    if(sh.ext.bcpayTitle!=null)body.summary=sh.ext.bcpayTitle;
+    await gapi(`/calendars/${encodeURIComponent(sh.calId)}/events/${sh.id}`,{method:'PATCH',body:JSON.stringify(body)});n++;
+  }
+  return n;
+}
+async function previewWrites(list,label){
+  try{
+    ui.msg='Preparing preview…';render();
+    const plan=await planWrites(list);ui.msg='';
+    const ch=plan.filter(p=>p.action!=='same');
+    ui.modal={title:label,html:`<p class="note">Mode: <b>${S.write.mode==='companion'?'companion "Pay" calendar (original events untouched)':'write into original event descriptions'}</b>. ${ch.length} change(s), ${plan.length-ch.length} already up to date.</p>`+
+      (S.write.mode==='description'?'<div class="warnbox">Pay will be visible to anyone who can see that calendar.</div>':'')+
+      `<table>${ch.map(p=>`<tr><td>${p.action==='create'?'<span class="chip ok">new</span>':'<span class="chip warn">update</span>'}</td><td>${esc(fmtD(p.sh.start))} ${esc(p.sh.baseTitle)}</td><td class="n amt">${money(RES.get(p.sh.key).total)}</td></tr>`).join('')||'<tr><td>Nothing to change.</td></tr>'}</table>`,
+      ok:ch.length?async()=>{try{ui.msg='Writing…';render();const n=await applyPlan(plan);ui.msg=`Wrote ${n} event(s).`}catch(e){ui.msg='Write failed: '+e.message}render()}:null};
+  }catch(e){ui.msg=e.message}
+  render();
+}
+
+/* ============================ validation ============================ */
+function validate(){
+  const out=[];
+  if(!(rateAt(S.baseHistory,today())>0))out.push('Base hourly rate is blank or zero.');
+  S.baseHistory.forEach(h=>{if(num(h.value)==null||h.value<0)out.push('A base rate row is blank or negative.')});
+  const seen=new Map();
+  S.premiums.forEach(p=>{
+    if(p.on){
+      p.history.forEach(h=>{if(num(h.value)==null)out.push(`"${p.name}": blank value for ${h.from||'(no date)'}.`);else if(h.value<0)out.push(`"${p.name}": negative value.`);if(!h.from)out.push(`"${p.name}": effective date missing.`)});
+      if(p.when.kind==='windows'){if(!(p.when.windows||[]).length)out.push(`"${p.name}": no time windows.`);(p.when.windows||[]).forEach(w=>{if(w.sd===w.ed&&hm(w.st)===hm(w.et))out.push(`"${p.name}": a window has identical start and end.`)})}
+      if(p.when.kind==='afterHours'&&num(p.when.afterHours)==null)out.push(`"${p.name}": threshold hours blank.`);
+      const sig=JSON.stringify([p.type,p.when,p.history.map(h=>h.value),p.appliesOT]);
+      if(seen.has(sig))out.push(`"${p.name}" fully overlaps "${seen.get(sig)}" (same rule and value), so it is likely double-counted.`);else seen.set(sig,p.name);
+    }
+  });
+  const o=S.ot;[['dailyAfter1','dailyMult1'],['dailyAfter2','dailyMult2'],['weeklyAfter','weeklyMult']].forEach(([a,m])=>{if((o[a]==='')!==(o[m]===''))out.push('Overtime: each threshold needs both hours and a multiplier (or leave both blank).')});
+  return [...new Set(out)];
+}
+
+/* ============================ views ============================ */
+const inp=(path,type='text',attrs='')=>`<input data-p="${path}" data-t="${type}" type="${type==='num'?'number':type}" ${type==='num'?'step="any"':''} value="${esc(pget(S,path)??'')}" ${attrs}>`;
+const sel=(path,opts,t='str')=>`<select data-p="${path}" data-t="${t}">${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(pget(S,path))===String(v)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+const chk=path=>`<input type="checkbox" data-p="${path}" data-t="bool" ${pget(S,path)?'checked':''}>`;
+const F=(label,html)=>`<label class="f">${label}${html}</label>`;
+const linesTable=r=>`<table>${r.lines.map(l=>`<tr><td>${esc(l.name)}</td><td class="n note">${l.kind==='prem'&&r.lines.find(x=>x.id===l.id&&0)?'':l.hours.toFixed(2)+' h'}</td><td class="n">${money(l.amount)}</td></tr>`).join('')}<tr class="tot"><td>Estimated total</td><td class="n note">${(r.paidMin/60).toFixed(2)} h paid</td><td class="n">${money(r.total)}</td></tr></table>`;
+
+function periodInfo(){
+  const ps=dayNum(parseYmd(S.periodStart)),L=Math.max(1,+S.periodDays||14);
+  const cur=Math.floor((dayNum(new Date())-ps)/L)+ui.off;
+  return {i:cur,start:ps+cur*L,end:ps+(cur+1)*L,L,ps};
+}
+function flagsFor(pb){
+  const out=[],list=ALL.filter(s=>{const d=dayNum(s.start);return d>=pb.start-1&&d<=pb.end});
+  list.forEach((a,i)=>{
+    const lab=`${fmtD(a.start)} ${a.baseTitle}`,r=RES.get(a.key),b=list[i+1];
+    if(a.end<=a.start)out.push(`${lab}: end is not after start.`);
+    if(b){if(b.start<a.end)out.push(`Overlap: ${lab} and ${fmtD(b.start)} ${b.baseTitle}.`);else{const g=(b.start-a.end)/36e5;if(g<S.minRest)out.push(`Only ${g.toFixed(1)} h rest between ${lab} and the next shift.`)}}
+    const sp=S.premiums.find(p=>p.id==='stat'),hn=[...new Set([ymd(a.start),ymd(new Date(a.end-60000))])].map(holidayName).filter(Boolean);
+    if(hn.length&&sp&&!(sp.on&&rateAt(sp.history,ymd(a.start))>0))out.push(`${lab} falls on ${hn[0]}, but the Statutory holiday pay premium is off or has no value (Settings).`);
+    if(r&&r.paidMin>300&&!(+a.breakMin))out.push(`${lab}: over 5 h with no unpaid break set.`);
+    if(dayNum(a.start)<pb.end&&dayNum(new Date(a.end-60000))>=pb.end&&dayNum(a.start)>=pb.start)out.push(`${lab} crosses the pay-period boundary.`);
+  });
+  UNCL.forEach(u=>out.push(`Not classified as a shift: "${u.title||'(untitled)'}" on ${fmtD(u.start)}${u.recurring?' (recurring events are not expanded)':''}.`));
+  return out;
+}
+function chart(shifts){
+  if(!shifts.length)return '';
+  const days=new Map();
+  shifts.forEach(s=>{const k=ymd(s.start),r=RES.get(s.key);const d=days.get(k)||{b:0,p:0};d.b+=r.baseAmt;d.p+=r.total-r.baseAmt;days.set(k,d)});
+  const ks=[...days.keys()].sort(),mx=Math.max(...ks.map(k=>days.get(k).b+days.get(k).p),1),W=Math.max(280,ks.length*34),H=130;
+  return `<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H+22}" width="${W}" role="img" aria-label="Earnings by day">${ks.map((k,i)=>{
+    const d=days.get(k),x=i*34+6,hb=d.b/mx*H,hp=d.p/mx*H;
+    return `<rect x="${x}" y="${H-hb}" width="22" height="${hb}" fill="var(--acc)" rx="2"><title>${k} base ${money(d.b)}</title></rect><rect x="${x}" y="${H-hb-hp}" width="22" height="${hp}" fill="var(--acc2)" rx="2"><title>${k} premiums ${money(d.p)}</title></rect><text x="${x+11}" y="${H+12}" text-anchor="middle">${k.slice(8)}</text>`}).join('')}</svg></div>
+    <div class="note"><span style="color:var(--acc)">■</span> base &nbsp;<span style="color:var(--acc2)">■</span> premiums &amp; overtime</div>`;
+}
+const PAL=['#3b6fe0','#e8884a','#2fae94','#c94c68','#8b5cf6','#eab308','#64748b'];
+const m0=n=>'$'+Math.round(n).toLocaleString();
+const iconFor=sh=>{const h=sh.start.getHours(),I=S.icons;const i=h>=5&&h<12?I.day:h>=12&&h<19?I.eve:I.night;return i+((holidayName(ymd(sh.start))||sh.tags.includes('stat'))?I.stat:'')};
+const titleFor=(sh,r)=>{const m=S.write.titleMode;return m==='none'?sh.baseTitle:`${iconFor(sh)} ${sh.baseTitle}`+(m==='iconpay'?` · ${m0(r.total)}`:'')};
+function periodOfDay(dn){const ps=dayNum(parseYmd(S.periodStart)),L=Math.max(1,+S.periodDays||14),i=Math.floor((dn-ps)/L);return {i,start:ps+i*L,end:ps+(i+1)*L,L,ps}}
+const pShifts=(a,b)=>ALL.filter(s=>{const d=dayNum(s.start);return d>=a&&d<b});
+const pGross=(a,b)=>pShifts(a,b).reduce((t,s)=>t+RES.get(s.key).total,0);
+const pHours=(a,b)=>pShifts(a,b).reduce((t,s)=>t+RES.get(s.key).paidMin/60,0);
+const badge=(cur,prev,txt)=>prev>0?`<span class="badge ${cur>=prev?'up':'dn'}">${cur>=prev?'↗':'↘'} ${Math.abs((cur-prev)/prev*100).toFixed(0)}%</span> <span class="vs">${txt}</span>`:`<span class="vs">${txt}: no data</span>`;
+function donut(parts,center,sub){
+  const tot=parts.reduce((s,p)=>s+p.val,0)||1,R=60,C=2*Math.PI*R;let off=0;
+  const segs=parts.map((p,i)=>{const len=p.val/tot*C,s=`<circle cx="80" cy="80" r="${R}" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="20" stroke-dasharray="${Math.max(0,len-3)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)" stroke-linecap="butt"><title>${esc(p.label)} ${money(p.val)}</title></circle>`;off+=len;return s}).join('');
+  return `<div class="donut"><svg viewBox="0 0 160 160" width="150" height="150" role="img" aria-label="Pay distribution"><circle cx="80" cy="80" r="${R}" fill="none" stroke="var(--chip)" stroke-width="20"/>${segs}<text x="80" y="82" text-anchor="middle" class="dc">${esc(center)}</text><text x="80" y="100" text-anchor="middle" class="ds">${esc(sub)}</text></svg>
+  <div class="legend">${parts.map((p,i)=>`<div><i style="background:${PAL[i%PAL.length]}"></i><span>${esc(p.label)}</span><b>${Math.round(p.val/tot*100)}%</b></div>`).join('')}</div></div>`;
+}
+function spark(vals,labels){
+  const W=300,H=120,mx=Math.max(...vals,1),n=vals.length,pts=vals.map((v,i)=>[14+i*(W-28)/Math.max(n-1,1),H-26-(v/mx)*(H-44)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Trend"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b6fe0" stop-opacity=".25"/><stop offset="1" stop-color="#3b6fe0" stop-opacity="0"/></linearGradient></defs>
+  <path d="${line} L${pts[n-1][0]} ${H-20} L${pts[0][0]} ${H-20}Z" fill="url(#sg)"/><path d="${line}" fill="none" stroke="#3b6fe0" stroke-width="2"/>
+  ${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--card)" stroke="#3b6fe0" stroke-width="2"><title>${esc(labels[i])}: ${money(vals[i])}</title></circle><text x="${p[0]}" y="${H-5}" text-anchor="middle">${esc(labels[i])}</text>`).join('')}</svg>`;
+}
+function bars(pb,sh){
+  const per=new Map();sh.forEach(s=>{const k=dayNum(s.start)-pb.start;per.set(k,(per.get(k)||0)+RES.get(s.key).paidMin/60)});
+  const W=Math.max(260,pb.L*20),H=90,mx=Math.max(...per.values(),1);
+  return `<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H+18}" width="${W}" role="img" aria-label="Hours per day">${Array.from({length:pb.L},(_,k)=>{const v=per.get(k)||0,h=v/mx*H,x=k*(W/pb.L)+3,w=W/pb.L-6,d=new Date((pb.start+k)*864e5).getUTCDate();return `<rect x="${x}" y="${H-Math.max(h,2)}" width="${w}" height="${Math.max(h,2)}" rx="3" fill="${v?'#3b6fe0':'var(--chip)'}"><title>${fmtDN(pb.start+k)}: ${v.toFixed(1)} h</title></rect><text x="${x+w/2}" y="${H+13}" text-anchor="middle">${d}</text>`}).join('')}</svg></div>`;
+}
+function viewPay(){
+  const pb=periodInfo(),sh=pShifts(pb.start,pb.end);
+  let hrs=0,base=0,tot=0,ot=0;const agg=new Map();
+  sh.forEach(s=>{const r=RES.get(s.key);hrs+=r.paidMin/60;base+=r.baseAmt;tot+=r.total;ot+=r.otMin/60;r.lines.forEach(l=>agg.set(l.name.replace(/ \(×.*\)/,' (OT)'),(agg.get(l.name.replace(/ \(×.*\)/,' (OT)'))||0)+l.amount))});
+  const ytd=ui.off===0?num(S.ded.ytdGross):null,net=netFor(tot,pb.start,undefined,ytd);
+  const pv=[5,4,3,2,1,0].map(k=>pb.start-k*pb.L),pvals=pv.map(st=>{const g=pGross(st,st+pb.L);const n=netFor(g,st);return n?n.net:g}),plab=pv.map(st=>fmtDN(st).slice(5));
+  const prevNetOrGross=pvals[4];
+  const wkAfter=num(S.ot.weeklyAfter);let prox='';
+  if(wkAfter==null)prox='Overtime thresholds are blank (not looked up yet), so no overtime is calculated.';
+  else{const wk=new Map();ALL.forEach(s=>{const w=Math.floor((dayNum(s.start)-pb.ps)/7);wk.set(w,(wk.get(w)||0)+RES.get(s.key).paidMin/60)});
+    const w0=Math.floor((pb.start-pb.ps)/7),n=Math.ceil(pb.L/7);
+    prox=Array.from({length:n},(_,i)=>{const h=wk.get(w0+i)||0,left=wkAfter-h;return `Week ${i+1}: ${h.toFixed(1)} h, ${left>0?left.toFixed(1)+' h until overtime':'<b>in overtime</b>'}`}).join(' · ')}
+  const fl=flagsFor(pb);
+  const parts=[...agg].filter(([,v])=>v>0).map(([label,val])=>({label,val}));
+  return `<div class="welcome"><h2>Welcome back! Here's your pay for ${fmtDN(pb.start).slice(5)} → ${fmtDN(pb.end-1).slice(5)}.</h2><div class="btns"><button class="b p" data-act="tab" data-k="whatif">+ What-if shift</button><button class="b" data-act="tab" data-k="month">View Calendar</button></div></div>
+  <div class="pnav"><button class="b s" data-act="poff" data-d="-1">‹ Prev</button><b>${fmtDN(pb.start)} → ${fmtDN(pb.end-1)}</b><span class="note">${ui.off===0?'current period':''}</span><button class="b s" data-act="poff" data-d="1">Next ›</button>${ui.off!==0?'<button class="b s" data-act="poff" data-d="0">Today</button>':''}</div>
+  ${!(rateAt(S.baseHistory,today())>0)?'<div class="warnbox badbox">Base hourly rate is not set. Enter it in Settings or every shift shows $0 base.</div>':''}
+  <div class="trio">
+   <div class="tile"><div class="th"><h3>Total hours</h3><span class="note">${sh.length} shifts</span></div><div class="big">${hrs.toFixed(1)}<small> h</small></div><div>${badge(hrs,pHours(pb.start-pb.L,pb.start),'vs last period')}</div>${bars(pb,sh)}${ot?`<div class="note">Includes ${ot.toFixed(1)} h overtime</div>`:''}</div>
+   <div class="tile"><div class="th"><h3>${net?'Take-home (net)':'Gross pay'}</h3><span class="note">last 6 periods</span></div><div class="big">${money(net?net.net:tot)}</div><div>${badge(net?net.net:tot,prevNetOrGross,'vs last period')}</div>${spark(pvals,plab)}</div>
+   <div class="tile"><div class="th"><h3>Pay distribution</h3><span class="note">gross ${money(tot)}</span></div>${parts.length?donut(parts,m0(tot),'Gross'):'<p class="note">No shifts in this period.</p>'}</div>
+  </div>
+  <div class="split">
+   <div class="tile"><div class="th"><h3>Hits your account</h3><span class="note">${net?`≈ ${fmtDN(pb.end-1+(+S.ded.payLag||0))}`:''}</span></div>
+    ${net?`<table><tr><td>Gross pay</td><td class="n">${money(tot)}</td></tr>${net.lines.map(l=>`<tr><td class="note">${esc(l.name)}</td><td class="n err">−${money(l.amount)}</td></tr>`).join('')}<tr class="tot"><td>Estimated net deposit</td><td class="n">${money(net.net)}</td></tr></table><p class="note">Estimate from the 2026 CRA/BC formulas using the figures in Settings → Deductions. Your payslip is authoritative.</p>`:'<p class="note">Deductions are switched off in Settings.</p>'}</div>
+   <div class="tile"><div class="th"><h3>Overtime &amp; flags</h3></div><p class="note">${prox}</p>${fl.length?fl.map(f=>`<div class="flag">${esc(f)}</div>`).join(''):'<p class="note ok">No flags for this period.</p>'}</div>
+  </div>
+  <div class="sech"><h3>Shift snapshot</h3>${sh.length?'':`<button class="b" data-act="sample">Load sample shifts</button>`}</div>
+  ${sh.length?`<div class="stbl"><div class="srow shd"><div>Date</div><div>Time</div><div class="hm">Type</div><div class="hm">Hours</div><div class="hm">Premiums</div><div>Est. pay</div><div>Status</div></div>${sh.map(shiftRow).join('')}</div>`:'<p class="note">No shifts in this period. Import a calendar in Sync, or load sample shifts.</p>'}`;
+}
+function premTimes(s,r){
+  const el=S.premiums.filter(p=>p.on&&(!p.regularOnly||S.status==='regular')&&(!p.areaOnly||S.areaUnit)&&rateAt(p.history,ymd(s.start))!=null);
+  if(!el.length)return '';
+  return `<h3>Premium times for this shift</h3><p class="note">Change when each premium applies on just this shift (for example if you were called in early or stayed late).</p>`+el.map(p=>{
+    const ov=(s.pov||{})[p.uid],mode=ov?ov.mode:'default',l=r.lines.find(x=>x.kind==='prem'&&x.name===p.name);
+    return `<div class="ptrow"><div class="pn">${esc(p.name)}<div class="note">${l?l.hours.toFixed(2)+' h · '+money(l.amount):'not applied'}</div></div>
+     <select data-ov="pmode" data-k="${esc(s.key)}" data-u="${esc(p.uid)}">${[['default','Default rule'],['all','Whole shift'],['custom','Custom times'],['off','Off for this shift']].map(([v,t])=>`<option value="${v}" ${mode===v?'selected':''}>${t}</option>`).join('')}</select>
+     ${mode==='custom'?`<input type="time" data-ov="pst" data-k="${esc(s.key)}" data-u="${esc(p.uid)}" value="${ov.st}"><span>→</span><input type="time" data-ov="pen" data-k="${esc(s.key)}" data-u="${esc(p.uid)}" value="${ov.en}">`:''}</div>`}).join('');
+}
+function shiftRow(s){
+  const r=RES.get(s.key),open=ui.open===s.key;
+  const hn=[...new Set([ymd(s.start),ymd(new Date(s.end-60000))])].map(holidayName).filter(Boolean);
+  const edited=Object.keys(s.pov||{}).length;
+  const st=r.otMin?['bad','Overtime']:hn.length?['warn','Stat holiday']:s.end<new Date()?['ok','Worked']:['blue','Upcoming'];
+  return `<div class="sgrp ${open?'open':''}"><div class="srow" data-act="open" data-k="${esc(s.key)}"><div><b>${esc(fmtD(s.start))}</b></div><div>${fmtT(s.start)}–${fmtT(s.end)}</div><div class="hm">${iconFor(s)} ${esc(s.baseTitle)}</div><div class="hm">${(r.paidMin/60).toFixed(1)}</div><div class="hm">${money(r.total-r.baseAmt)}${edited?' <span class="chip">edited</span>':''}</div><div class="amt">${money(r.total)}</div><div><span class="pill ${st[0]}">${st[1]}</span></div></div>
+  ${open?`<div class="sdet">${hn.map(n=>`<span class="chip stat">★ ${esc(n)}</span>`).join('')}${linesTable(r)}${premTimes(s,r)}
+   <h3>Break &amp; tags</h3><div class="row"><label class="f inl">Unpaid break (min) <input style="width:80px" type="number" data-ov="breakMin" data-k="${esc(s.key)}" value="${s.breakMin}"></label>
+   ${TAGS.map(([k,l])=>`<label class="f inl"><input type="checkbox" data-ov="tag" data-tag="${k}" data-k="${esc(s.key)}" ${s.tags.includes(k)?'checked':''}> ${l}</label>`).join('')}</div>
+   ${s.src==='google'?`<button class="b s" data-act="writeOne" data-k="${esc(s.key)}">Write pay to calendar…</button>`:'<span class="note">Read-only source: pay cannot be written back.</span>'}</div>`:''}</div>`;
+}
+function viewMonth(){
+  const b=new Date();b.setDate(1);b.setMonth(b.getMonth()+ui.moff);
+  const y=b.getFullYear(),m=b.getMonth(),days=new Date(y,m+1,0).getDate(),off=b.getDay();
+  const by=new Map();ALL.forEach(s=>{const k=ymd(s.start);(by.get(k)||by.set(k,[]).get(k)).push(s)});
+  let hrs=0,gross=0,n=0;
+  const cells=[];for(let i=0;i<off;i++)cells.push('<div class="mc empty"></div>');
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${p2(m+1)}-${p2(d)}`,list=by.get(ds)||[],hol=holidayName(ds);
+    list.forEach(s=>{const r=RES.get(s.key);hrs+=r.paidMin/60;gross+=r.total;n++});
+    cells.push(`<div class="mc ${ds===today()?'today':''}"><span class="dn">${d}</span>${hol?`<i class="hs" title="${esc(hol)}">★</i>`:''}${list.map(s=>`<button class="mi" data-act="goto" data-k="${esc(s.key)}" title="${esc(s.baseTitle)} ${fmtT(s.start)}–${fmtT(s.end)}"><span class="ic">${iconFor(s)}</span><small>${ui.showPay?m0(RES.get(s.key).total):fmtT(s.start)}</small></button>`).join('')}</div>`);
+  }
+  return `<div class="welcome"><h2>${b.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><div class="btns"><button class="b" data-act="mnav" data-d="-1">‹</button><button class="b" data-act="mnav" data-d="0">Today</button><button class="b" data-act="mnav" data-d="1">›</button></div></div>
+  <div class="tile"><div class="mhead">${DAYS.map(d=>`<div>${d}</div>`).join('')}</div><div class="mgrid">${cells.join('')}</div>
+   <p class="note">${n} shifts · ${hrs.toFixed(1)} h · ${money(gross)} gross. Tap an icon to open that shift.</p>
+   <label class="f inl"><input type="checkbox" id="showpay" ${ui.showPay?'checked':''}> Show pay under each icon</label></div>
+  <div class="split"><div class="tile"><div class="th"><h3>Shift icons</h3></div>
+   <div class="row">${F('Day (5:00–11:59)',inp('icons.day'))}${F('Evening (12:00–18:59)',inp('icons.eve'))}${F('Night',inp('icons.night'))}${F('Stat holiday',inp('icons.stat'))}</div></div>
+   <div class="tile"><div class="th"><h3>Phone widget</h3></div><p class="note">A web page can't be a home-screen widget itself, but your phone's calendar widget can show these icons:</p>
+   <ol class="note" style="padding-left:18px;margin:4px 0"><li><b>Google Calendar:</b> in the Sync tab, set the title style to an icon and write to your calendar. Add the Google Calendar widget.</li><li><b>Apple Calendar / any app:</b> download the file below, open it on your phone and import.</li></ol>
+   <div class="row"><button class="b p" data-act="ics" data-pay="0">Download .ics (icons only)</button><button class="b" data-act="ics" data-pay="1">…with pay in titles</button></div>
+   <p class="note">Pay in a title is visible to anyone who can see that calendar.</p></div></div>`;
+}
+function exportICS(withPay){
+  const e2=s=>String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n'),z=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//BC Pay Calculator//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:My shifts'];
+  ALL.forEach(s=>{const r=RES.get(s.key);L.push('BEGIN:VEVENT',`UID:bcpay-${s.key.replace(/[^a-z0-9]/gi,'')}@local`,`DTSTAMP:${z(new Date())}`,`DTSTART:${z(s.start)}`,`DTEND:${z(s.end)}`,`SUMMARY:${e2(`${iconFor(s)} ${s.baseTitle}`+(withPay?` · ${m0(r.total)}`:''))}`);if(withPay)L.push(`DESCRIPTION:${e2(payBlock(r))}`);L.push('END:VEVENT')});
+  L.push('END:VCALENDAR');
+  const u=URL.createObjectURL(new Blob([L.join('\r\n')],{type:'text/calendar'})),a=document.createElement('a');a.href=u;a.download='my-shifts.ics';a.click();URL.revokeObjectURL(u);
+}
+function manualShift(f){
+  const d=parseYmd(f.date),[sh,sm]=f.st.split(':').map(Number),[eh,em]=f.en.split(':').map(Number);
+  const start=new Date(d.getFullYear(),d.getMonth(),d.getDate(),sh,sm),end=new Date(d.getFullYear(),d.getMonth(),d.getDate(),eh,em);
+  if(end<=start)end.setDate(end.getDate()+1);
+  return {key:'manual|'+start.toISOString(),start,end,breakMin:+f.brk||0,tags:[...f.tags],baseTitle:'What-if'};
+}
+function shiftForm(id,f){
+  return `<div class="row">${F('Date',`<input type="date" data-f="${id}.date" value="${f.date}">`)}${F('Start',`<input type="time" data-f="${id}.st" value="${f.st}">`)}${F('End',`<input type="time" data-f="${id}.en" value="${f.en}">`)}${F('Break (min)',`<input type="number" data-f="${id}.brk" value="${f.brk}">`)}</div>
+  <div class="row">${TAGS.map(([k,l])=>`<label class="f inl"><input type="checkbox" data-f="${id}.tag" data-tag="${k}" ${f.tags.includes(k)?'checked':''}> ${l}</label>`).join('')}</div>`;
+}
+function viewWhatIf(){
+  const m=manualShift(ui.wi),alone=calcShift(m,S,new Map());
+  const without=calcShifts(ALL,S),withX=calcShifts([...ALL,m],S);
+  let t0=0,t1=0,o0=0,o1=0;without.forEach(r=>{t0+=r.total;o0+=r.otMin});withX.forEach(r=>{t1+=r.total;o1+=r.otMin});
+  const inCtx=withX.get(m.key),pp=periodOfDay(dayNum(m.start));
+  const sumP=res=>[...res].reduce((a,[k,r])=>{const s=[...ALL,m].find(x=>x.key===k),d=dayNum(s.start);return d>=pp.start&&d<pp.end?a+r.total:a},0);
+  const n0=netFor(sumP(without),pp.start),n1=netFor(sumP(withX),pp.start);
+  return `<div class="card"><h2>What-if shift</h2><p class="note">A hypothetical shift. Nothing is saved or written to a calendar.</p>${shiftForm('wi',ui.wi)}</div>
+  <div class="card"><h2>This shift on its own</h2>${linesTable(alone)}</div>
+  <div class="card"><h2>With your loaded shifts</h2>
+   <p>Adding it changes your total by <b>${money(t1-t0)}</b> (shift in context pays ${money(inCtx.total)}).</p>
+   ${n0&&n1?`<p>Estimated extra take-home after deductions: <b>${money(n1.net-n0.net)}</b> <span class="note">(pay period ${fmtDN(pp.start)} → ${fmtDN(pp.end-1)})</span></p>`:''}
+   <p>Extra overtime hours triggered: <b>${((o1-o0)/60).toFixed(2)}</b>${num(S.ot.weeklyAfter)==null&&num(S.ot.dailyAfter1)==null?' <span class="note">(overtime thresholds not set)</span>':''}</p></div>`;
+}
+function viewSlip(){
+  const f=ui.ps,m=manualShift(f),r=calcShift(m,S,new Map()),paid=num(f.paid),diff=paid==null?null:Math.round((paid-r.total)*100)/100;
+  let checks=[];try{checks=JSON.parse(lsGet(LSC,'[]'))}catch(e){}
+  return `<div class="card"><h2>Payslip check</h2><p class="note">Enter a past shift and the amount actually paid for it. A mismatch usually points at a wrong premium value. Use a shift that was not in overtime.</p>${shiftForm('ps',f)}
+   <div class="row">${F('Amount paid for this shift ($)',`<input type="number" step="any" data-f="ps.paid" value="${esc(f.paid)}">`)}<button class="b" data-act="saveCheck">Save this check</button></div></div>
+   <div class="card"><h2>Result</h2>${linesTable(r)}${diff==null?'<p class="note">Enter the paid amount to see the difference.</p>':`<p><b class="${Math.abs(diff)<0.01?'ok':'err'}">${Math.abs(diff)<0.01?'Matches.':(diff>0?'Paid '+money(diff)+' MORE than estimated.':'Paid '+money(-diff)+' LESS than estimated.')}</b></p>${Math.abs(diff)>=0.01?'<p class="note">Compare each line above with your payslip lines. Check the premium values and their effective dates in Settings.</p>':''}`}</div>
+   ${checks.length?`<div class="card"><h2>Saved checks</h2><table>${checks.map(c=>`<tr><td>${esc(c.date)} ${esc(c.st)}–${esc(c.en)}</td><td class="n">paid ${money(c.paid)}</td><td class="n">est. ${money(c.est)}</td><td class="n ${Math.abs(c.paid-c.est)<0.01?'ok':'err'}">${money(c.paid-c.est)}</td></tr>`).join('')}</table><p class="note">Saved on this device only.</p></div>`:''}`;
+}
+function viewCal(){
+  const g=SHIFTS.filter(s=>s.src==='google');
+  return `<div class="card"><h2>Read shifts</h2>
+   <h3>Google Calendar (also enables write-back)</h3>
+   <div class="row"><button class="b p" data-act="gconnect">${token?'Reconnected? Re-read events':'Connect Google'}</button><button class="b" data-act="gread">Read events</button></div>
+   <p class="note">Calendar ID: ${esc(S.google.calId)} · Client ID ${S.google.clientId?'set':'<b class="err">not set (Settings)</b>'}. The token lives in memory only; tap Connect once per session.</p>
+   <h3>ICS link (read-only)</h3>
+   <div class="row"><input id="icsurl" placeholder="Secret iCal address" value="${esc(lsGet(LSI,''))}"><button class="b" data-act="icsurl">Fetch</button></div>
+   <p class="note">Some hosts block browser fetches (CORS). If it fails, use the file upload below.</p>
+   <h3>ICS file (always works)</h3>
+   <input type="file" id="icsfile" accept=".ics,text/calendar">
+   <p class="note">Shifts are re-read each time and never stored. Loaded: ${SHIFTS.length} shift(s), ${UNCL.length} unclassified event(s).</p></div>
+  <div class="card"><h2>Write pay back to calendar</h2>
+   <div class="warnbox">Pay written into a calendar is visible to anyone who can see that calendar. Use a calendar that is private to you. The companion "Pay" calendar mode is safest because original shift events are never touched.</div>
+   <div class="row">${F('Mode',sel('write.mode',[['companion','Companion "Pay" calendar (recommended)'],['description','Write into original event description']]))}${F('Pay calendar ID',inp('write.payCalId','text','placeholder="xxxx@group.calendar.google.com"'))}</div>
+   <div class="row">${F('Event title style (this is what phone calendar widgets show)',sel('write.titleMode',[['none','Leave title unchanged'],['icon','Shift icon + title (☀️ D)'],['iconpay','Icon + title + total (☀️ D · $412)']]))}</div>
+   <p class="note">Description mode edits the original event title. Companion mode creates "icon + $total" events in the Pay calendar.</p>
+   <div class="row"><button class="b p" data-act="writeAll" ${g.length?'':'disabled'}>Preview &amp; write all (${g.length})</button><button class="b" data-act="resync" ${g.length?'':'disabled'}>Re-write updated shifts</button><button class="b d" data-act="undo">Undo all</button></div>
+   <p class="note">Only events that match your shift mapping are touched. Each write is previewed first. In description mode, your original text is stored on the event for undo; companion mode undo deletes the Pay events.</p></div>`;
+}
+function premEditor(p,i){
+  const P=`premiums.${i}.`,w=p.when;
+  if(w.kind==='windows'&&!w.windows)w.windows=[{sd:5,st:'23:00',ed:0,et:'23:00'}];
+  const dayOpts=DAYS.map((d,k)=>[k,d]);
+  return `<div class="row">${F('Name',inp(P+'name'))}${F('Type',sel(P+'type',[['perHour','$ per hour'],['multiplier','Multiplier of base'],['flat','Flat $ per shift']]))}${F('Stacking',sel(P+'stacking',[['add','Add on top'],['replace','Replace lower premiums']]))}</div>
+  <div class="row">${F('When it applies',sel(P+'when.kind',[['always','Every paid hour'],['windows','Weekly time window(s)'],['stat','Statutory holidays'],['tag','Shift has tag'],['afterHours','After N hours in shift']]))}
+   ${w.kind==='tag'?F('Tag',sel(P+'when.tag',TAGS)):''}${w.kind==='afterHours'?F('After hours',inp(P+'when.afterHours','num')):''}</div>
+  ${w.kind==='windows'?`<div>${w.windows.map((x,k)=>`<div class="row">${sel(P+`when.windows.${k}.sd`,dayOpts,'int')}${inp(P+`when.windows.${k}.st`,'time')}<span>→</span>${sel(P+`when.windows.${k}.ed`,dayOpts,'int')}${inp(P+`when.windows.${k}.et`,'time')}<button class="b s d" data-act="delwin" data-i="${i}" data-k="${k}">✕</button></div>`).join('')}<button class="b s" data-act="addwin" data-i="${i}">+ window</button></div>`:''}
+  <h3>Rates by effective date</h3>
+  ${p.history.map((h,k)=>`<div class="row">${F('From',inp(P+`history.${k}.from`,'date'))}${F(p.type==='multiplier'?'Multiplier':'Value',inp(P+`history.${k}.value`,'num'))}${p.history.length>1?`<button class="b s d" data-act="delhist" data-i="${i}" data-k="${k}">✕</button>`:''}</div>`).join('')}
+  <button class="b s" data-act="addhist" data-i="${i}">+ rate change</button>
+  <div class="row"><label class="f inl">${chk(P+'appliesOT')} Applies to overtime hours</label><label class="f inl">${chk(P+'regularOnly')} Regular employees only</label><label class="f inl">${chk(P+'areaOnly')} Only in qualifying unit</label></div>
+  <div class="row">${F('Status',sel(P+'status',[['confirmed','Confirmed'],['verify','Verify'],['outdated','Outdated, verify'],['lookup','Must be looked up']]))}</div>
+  ${F('Notes',`<textarea data-p="${P}notes" data-t="str">${esc(p.notes)}</textarea>`)}
+  <div class="row"><button class="b s" data-act="closeedit">Done</button>${p.id&&PRESET.find(x=>x.id===p.id)?`<button class="b s" data-act="resetprem" data-i="${i}">Reset to original</button>`:''}<button class="b s d" data-act="delprem" data-i="${i}">Delete</button></div>`;
+}
+function sample(){
+  const d=new Date();d.setDate(d.getDate()+((6-d.getDay()+7)%7));
+  return {key:'sample',start:new Date(d.getFullYear(),d.getMonth(),d.getDate(),19,0),end:new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,7,0),breakMin:S.breakMin,tags:[],baseTitle:'Sample'};
+}
+function viewSettings(){
+  const v=validate(),pv=calcShift(sample(),S,new Map());
+  const stCls={confirmed:'ok',verify:'warn',outdated:'warn',lookup:'bad'};
+  return `<div class="card"><h2>Live preview: Saturday night 12-hour shift (19:00–07:00)</h2>${linesTable(pv)}${v.length?`<div class="warnbox badbox"><b>Check your settings</b>${v.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div>`:'<p class="note ok">No validation problems.</p>'}</div>
+  <div class="card"><h2>Base pay</h2>
+   ${S.baseHistory.map((h,k)=>`<div class="row">${F('Effective from',inp(`baseHistory.${k}.from`,'date'))}${F('Base hourly rate ($)',inp(`baseHistory.${k}.value`,'num'))}${S.baseHistory.length>1?`<button class="b s d" data-act="delbase" data-k="${k}">✕</button>`:''}</div>`).join('')}
+   <button class="b s" data-act="addbase">+ wage change (raise)</button>
+   <div class="row">${F('Employment status',sel('status',[['regular','Regular'],['parttime','Part-time'],['casual','Casual']]))}<label class="f inl">${chk('areaUnit')} Qualifying unit (OR, PAR, ER, ICU/CCU)</label></div>
+   <div class="row">${F('Default unpaid break (min)',inp('breakMin','num'))}${F('Min. rest between shifts (h)',inp('minRest','num'))}</div>
+   <div class="row">${F('Pay period start date',inp('periodStart','date'))}${F('Length (days)',inp('periodDays','num'))}</div>
+   </div>
+  <div class="card"><h2>BC statutory holidays</h2>
+   <p class="note">Recognised automatically from the shift date (the whole calendar day counts). Untick any your agreement doesn't give you. Then set the value of the "Statutory holiday pay" premium and switch it on.</p>
+   <div class="hols">${HOLS.map(([id,name,fn,note])=>{const y=new Date().getFullYear(),d=fn(y),d2=d<new Date(new Date().setHours(0,0,0,0))?fn(y+1):d;return `<label class="hol"><input type="checkbox" data-p="holidays.${id}" data-t="bool" ${S.holidays[id]!==false?'checked':''}><span><b>${esc(name)}</b><br><span class="note">${d2.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'})}${note?' · '+esc(note):''}</span></span></label>`}).join('')}</div>
+   ${F('Extra stat dates (YYYY-MM-DD, comma or space separated)',`<textarea data-p="statDates" data-t="str" style="min-height:44px">${esc(S.statDates)}</textarea>`)}</div>
+  <div class="card"><h2>Overtime</h2><p class="note">Blank means not set. Look these up in the current agreement. Daily thresholds count paid hours within a shift; the weekly threshold counts paid hours per week starting on the weekday of your pay period start.</p>
+   <div class="row">${F('Daily tier 1 after (h)',inp('ot.dailyAfter1','num'))}${F('× multiplier',inp('ot.dailyMult1','num'))}${F('Daily tier 2 after (h)',inp('ot.dailyAfter2','num'))}${F('× multiplier',inp('ot.dailyMult2','num'))}</div>
+   <div class="row">${F('Weekly after (h)',inp('ot.weeklyAfter','num'))}${F('× multiplier',inp('ot.weeklyMult','num'))}</div></div>
+  <div class="card"><h2>Premiums</h2>
+   ${S.premiums.map((p,i)=>`<div class="prem ${p.on?'':'off'}"><div class="row" style="align-items:center;justify-content:space-between;margin:0"><label class="f inl" style="margin:0">${chk(`premiums.${i}.on`)} <b>${esc(p.name)}</b></label>
+     <div><span class="chip ${stCls[p.status]||''}">${esc(p.status)}</span> <span class="amt">${p.type==='multiplier'?'×':'$'}${esc(rateAt(p.history,today())??'—')}${p.type==='perHour'?'/h':p.type==='flat'?'/shift':''}</span> <button class="b s" data-act="editprem" data-i="${i}">${ui.edit===i?'Close':'Edit'}</button></div></div>
+     ${p.changed?`<div class="note">Last changed ${esc(p.changed)}</div>`:''}${ui.edit===i?premEditor(p,i):`<div class="note">${esc(p.notes)}</div>`}</div>`).join('')}
+   <button class="b" data-act="addprem">+ Add premium</button></div>
+  <div class="card"><h2>Deductions (what hits your account)</h2>
+   <label class="f inl">${chk('ded.on')} Calculate take-home pay</label>
+   <p class="note">CPP, EI, federal and BC tax are prefilled with 2026 published figures (CPP YMPE $74,600, EI max insurable $68,900 at 1.63%, federal 14% lowest bracket, BC 5.6% lowest bracket). Verify against the CRA payroll tables and your payslip. Pension (Municipal Pension Plan), union dues and benefits are blank: copy the amounts from a payslip. If the result is off, enter a flat income-tax % taken from your payslip to calibrate.</p>
+   <div class="row">${F('Pension % of gross',inp('ded.pensionPct','num'))}${F('Union dues % of gross',inp('ded.unionPct','num'))}${F('Benefits $ per period',inp('ded.benefits','num'))}${F('Extra tax $ per period (TD1)',inp('ded.extraTax','num'))}</div>
+   <div class="row">${F('Flat income-tax % override (blank = use formula)',inp('ded.taxOverridePct','num'))}${F('Gross earned this year before the current period (blank = estimate)',inp('ded.ytdGross','num'))}${F('Days from period end to payday',inp('ded.payLag','num'))}</div>
+   <h3>Other deductions</h3>
+   ${S.ded.other.map((o,k)=>`<div class="row">${F('Name',inp(`ded.other.${k}.name`))}${F('Type',sel(`ded.other.${k}.type`,[['flat','$ per period'],['pct','% of gross']]))}${F('Value',inp(`ded.other.${k}.value`,'num'))}<button class="b s d" data-act="delother" data-k="${k}">✕</button></div>`).join('')}
+   <button class="b s" data-act="addother">+ Add deduction</button>
+   <h3>Tax and contribution figures (edit when rates change)</h3>
+   <div class="row">${F('Federal basic personal amount',inp('ded.fedBPA','num'))}${F('Canada employment amount',inp('ded.cea','num'))}${F('BC basic personal amount',inp('ded.bcBPA','num'))}</div>
+   <div class="row">${F('CPP rate %',inp('ded.cppRate','num'))}${F('CPP exemption',inp('ded.cppExempt','num'))}${F('YMPE',inp('ded.ympe','num'))}${F('CPP2 rate %',inp('ded.cpp2Rate','num'))}${F('YAMPE',inp('ded.yampe','num'))}${F('EI rate %',inp('ded.eiRate','num'))}${F('EI max insurable',inp('ded.eiMax','num'))}</div>
+   <div class="row">${F('Federal brackets (income up to = rate %, one per line, inf = no limit)',`<textarea data-p="ded.fedTable" data-t="str">${esc(S.ded.fedTable)}</textarea>`)}${F('BC brackets',`<textarea data-p="ded.bcTable" data-t="str">${esc(S.ded.bcTable)}</textarea>`)}</div>
+   <p class="note">Method: annualised from this period's pay, with CPP/EI year-to-date caps. It does not model bonuses, retro pay, the BC tax-reduction credit or other TD1 claims.</p></div>
+  <div class="card"><h2>Calendar event mapping</h2>
+   <div class="row"><label class="f inl">${chk('map.allTimed')} This is a dedicated work calendar: treat every timed event as a shift</label></div>
+   ${F('…or treat events whose title contains this keyword as shifts',inp('map.keyword'))}
+   ${F('Title codes, one per line: CODE=HH:MM-HH:MM (titles like "0700-1900" are recognised automatically)',`<textarea data-p="map.codes" data-t="str">${esc(S.map.codes)}</textarea>`)}
+   <p class="note">Add #stat, #shortNotice, #callback or #onCall to an event title or description to tag it. A code ending at or before its start time ends the next day.</p></div>
+  <div class="card"><h2>Google</h2><p class="note">Create a free Google Cloud project, enable the Calendar API, create an OAuth "Web" client ID with this page's origin as an authorised JavaScript origin, and add yourself as a test user. The client ID is not a secret. Scope requested: calendar events only.</p>
+   <div class="row">${F('OAuth client ID',inp('google.clientId'))}${F('Calendar to read (ID or "primary")',inp('google.calId'))}</div></div>
+  <div class="card"><h2>Backup</h2><div class="row"><button class="b" data-act="export">Export settings JSON</button><label class="b">Import JSON <input type="file" id="impfile" accept=".json" style="display:none"></label><button class="b d" data-act="resetall">Reset everything</button></div>
+   <p class="note">Settings live in this browser's local storage. Export a copy to back them up.</p></div>`;
+}
+
+/* ============================ tests ============================ */
+function runTests(){
+  const out=[],TS=defaults();TS.baseHistory=[{from:'2000-01-01',value:40}];TS.periodStart='2026-01-05';
+  const L=s=>{const [d,t]=s.split(' '),[y,m,dd]=d.split('-').map(Number),[h,mi]=t.split(':').map(Number);return new Date(y,m-1,dd,h,mi)};
+  const sh=(a,b,brk=0,tags=[])=>({key:a+b,start:L(a),end:L(b),breakMin:brk,tags});
+  const eq=(name,got,exp)=>out.push({name,ok:JSON.stringify(got)===JSON.stringify(exp),detail:`got ${JSON.stringify(got)}, expected ${JSON.stringify(exp)}`});
+  const one=(s,St=TS)=>calcShift(s,St,new Map());
+  const byName=r=>Object.fromEntries(r.lines.map(l=>[l.name,l.amount]));
+  let r=one(sh('2026-01-05 19:00','2026-01-06 07:00',30));
+  eq('12 h night shift crossing midnight, 30 min break',[r.paidMin/60,byName(r)['Base pay'],byName(r)['Shift premium'],r.total],[11.5,460,24.73,484.73]);
+  r=one(sh('2026-01-09 19:00','2026-01-10 07:00'));
+  eq('Friday-night weekend boundary (weekend + super)',[byName(r)['Weekend premium'],byName(r)['Super shift premium'],r.total],[18.4,7.5,531.7]);
+  const S4=clone(TS);S4.premiums=[
+    {id:'a',name:'A',on:true,type:'perHour',history:[{from:'2000-01-01',value:3}],when:{kind:'always'},appliesOT:false,stacking:'add'},
+    {id:'b',name:'B',on:true,type:'perHour',history:[{from:'2000-01-01',value:5}],when:{kind:'always'},appliesOT:false,stacking:'replace'},
+    {id:'c',name:'C',on:true,type:'perHour',history:[{from:'2000-01-01',value:2}],when:{kind:'always'},appliesOT:false,stacking:'add'}];
+  r=one(sh('2026-01-06 07:00','2026-01-06 15:00'),S4);
+  eq('Replace stacking drops lower premiums',[byName(r).B,byName(r).A,byName(r).C,r.total],[40,undefined,undefined,360]);
+  const S5=clone(TS);S5.ot.weeklyAfter=40;S5.ot.weeklyMult=1.5;
+  const wk=[5,6,7,8].map(d=>sh(`2026-01-0${d} 07:00`,`2026-01-0${d} 19:00`));
+  const rs=calcShifts(wk,S5);let tot=0,otm=0;rs.forEach(x=>{tot+=x.cents;otm+=x.otMin});
+  eq('Weekly overtime after 40 h (4×12 h)',[tot/100,otm/60],[2166,8]);
+  const S6=clone(TS);S6.premiums=[Object.assign(clone(PRESET[0]),{history:[{from:'2000-01-01',value:2.15},{from:'2026-01-07',value:3}]})];
+  eq('Effective-date rate change mid-period',[one(sh('2026-01-06 07:00','2026-01-06 15:00'),S6).lines[1].amount,one(sh('2026-01-07 07:00','2026-01-07 15:00'),S6).lines[1].amount],[17.2,24]);
+  r=one(sh('2026-01-06 07:00','2026-01-06 14:30'));
+  eq('Rounding: 7.5 h × $2.15 = 16.125 → 16.13',byName(r)['Shift premium'],16.13);
+  const S8=clone(TS);S8.premiums=[{id:'s',name:'Stat',on:true,type:'multiplier',history:[{from:'2000-01-01',value:1.5}],when:{kind:'stat'},appliesOT:false,stacking:'add'}];
+  eq('Statutory holiday multiplier (tagged shift)',one(sh('2026-01-06 07:00','2026-01-06 15:00',0,['stat']),S8).lines[1].amount,160);
+  eq('Stat premium not applied without tag/date',one(sh('2026-01-06 07:00','2026-01-06 15:00'),S8).lines.length,1);
+  const S10=clone(TS);S10.ot.dailyAfter1=8;S10.ot.dailyMult1=1.5;
+  r=one(sh('2026-01-06 07:00','2026-01-06 19:00'),S10);
+  eq('Daily overtime after 8 h; shift premium excluded on OT hours',[r.otMin/60,byName(r)['Overtime (×1.5)'],byName(r)['Shift premium']],[4,80,17.2]);
+  const S11=clone(TS);S11.premiums=[Object.assign(clone(PRESET[2]),{appliesOT:true})];S11.ot.dailyAfter1=8;S11.ot.dailyMult1=1.5;
+  r=one(sh('2026-01-10 07:00','2026-01-10 19:00'),S11);
+  eq('Weekend premium applies to adjoining OT when enabled',byName(r)['Weekend premium'],27.6);
+  const D=clone(defaults().ded);
+  let nf=netFor(2000,dayNum(L('2026-01-05 00:00')),D);
+  eq('CPP and EI on a $2,000 biweekly gross',[nf.lines.find(l=>l.name==='CPP').amount,nf.lines.find(l=>l.name==='EI').amount],[110.99,32.6]);
+  eq('Net = gross minus deductions, tax positive',[Math.abs(nf.net-(2000-nf.ded))<0.011,nf.lines.some(l=>l.name==='Federal income tax')&&nf.lines.some(l=>l.name==='BC income tax')],[true,true]);
+  nf=netFor(2000,dayNum(L('2026-01-05 00:00')),D,300000);
+  eq('CPP/EI stop once the yearly maximums are reached',[nf.lines.some(l=>l.name==='CPP'),nf.lines.some(l=>l.name==='EI')],[false,false]);
+  const D2=clone(D);D2.taxOverridePct=20;D2.pensionPct=10;
+  nf=netFor(1000,dayNum(L('2026-01-05 00:00')),D2);
+  eq('Flat tax override and pension % (tax on gross less pension)',[nf.lines.find(l=>l.name.startsWith('Income tax')).amount>0,nf.lines.find(l=>l.name==='Pension').amount],[true,100]);
+  const sP=clone(TS);
+  r=one(Object.assign(sh('2026-01-09 19:00','2026-01-10 07:00'),{pov:{weekend:{mode:'off'}}}),sP);
+  eq('Per-shift premium switched off',byName(r)['Weekend premium'],undefined);
+  r=one(Object.assign(sh('2026-01-09 19:00','2026-01-10 07:00'),{pov:{weekend:{mode:'custom',st:'23:00',en:'01:00'}}}),sP);
+  eq('Per-shift custom premium times (23:00-01:00 = 2 h)',byName(r)['Weekend premium'],4.6);
+  const hs=y=>[...holidaysOf(y)].map(([d,n])=>d+' '+n).join('|');
+  const h26=holidaysOf(2026);
+  eq('BC holidays 2026 (movable ones)',['2026-02-16','2026-04-03','2026-04-06','2026-05-18','2026-08-03','2026-09-07','2026-10-12'].map(d=>!!h26.get(d)),[true,true,true,true,true,true,true]);
+  eq('BC fixed holidays present',['2026-01-01','2026-07-01','2026-09-30','2026-11-11','2026-12-25'].map(d=>!!h26.get(d)),[true,true,true,true,true]);
+  eq('Stat holiday auto-recognised without a tag (Labour Day)',one(sh('2026-09-07 07:00','2026-09-07 15:00'),S8).lines[1].amount,160);
+  const pi=parseICS('BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nUID:1\r\nSUMMARY:N\r\nDTSTART:20260105T190000\r\nDTEND:20260106T070000\r\nEND:VEVENT\r\nEND:VCALENDAR');
+  eq('ICS parse + code mapping',pi.length===1&&(()=>{const c=classify(pi[0]);return c&&c.end-c.start===12*36e5})(),true);
+  return out;
+}
+function viewTests(){
+  const t=runTests(),ok=t.filter(x=>x.ok).length;
+  return `<div class="card"><h2>Engine self-tests: ${ok}/${t.length} passing</h2><table>${t.map(x=>`<tr><td class="${x.ok?'ok':'err'}">${x.ok?'✓':'✗'}</td><td>${esc(x.name)}${x.ok?'':`<div class="note err">${esc(x.detail)}</div>`}</td></tr>`).join('')}</table>
+  <p class="note">These use a fixed test configuration, not your settings. Add your real payslips as test cases once you have them.</p></div>`;
+}
+
+/* ============================ render + events ============================ */
+const TABS=[['pay','Dashboard','▦'],['month','Calendar','📅'],['whatif','What-if','🧮'],['slip','Payslip check','🧾'],['cal','Sync','🔄'],['set','Settings','⚙️'],['tests','Tests','✅']];
+function render(){
+  const y=window.scrollY;
+  const nv=([k,l,i])=>`<button class="nv ${ui.tab===k?'on':''}" data-act="tab" data-k="${k}"><span class="ni">${i}</span>${l}</button>`;
+  $('#side').innerHTML=`<div class="logo"><i>B</i>BC Pay Calc</div><div class="ng">Navigation</div>${TABS.slice(0,4).map(nv).join('')}<div class="ng">Tools</div>${TABS.slice(4).map(nv).join('')}<div class="aside-foot">Gross and net estimates. Nothing leaves this device except Google Calendar when you connect it.</div>`;
+  $('#ptitle').textContent=TABS.find(t=>t[0]===ui.tab)[1];
+  const v={pay:viewPay,month:viewMonth,whatif:viewWhatIf,slip:viewSlip,cal:viewCal,set:viewSettings,tests:viewTests}[ui.tab];
+  $('#app').innerHTML=(ui.msg?`<div class="warnbox">${esc(ui.msg)}</div>`:'')+v()+
+   (ui.modal?`<div class="modal"><div><h2 style="margin-top:0">${esc(ui.modal.title)}</h2>${ui.modal.html}<div class="row" style="margin-top:12px"><button class="b" data-act="modalno">Cancel</button>${ui.modal.ok?'<button class="b p" data-act="modalok">Confirm &amp; write</button>':''}</div></div></div>`:'');
+  window.scrollTo(0,y);
+}
+function stamp(path){const m=/^premiums\.(\d+)\./.exec(path);if(m)S.premiums[+m[1]].changed=today()}
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.p){
+    const ty=t.dataset.t;let v=ty==='bool'?t.checked:ty==='num'?(t.value===''?'':Number(t.value)):ty==='int'?Number(t.value):t.value;
+    pset(S,t.dataset.p,v);stamp(t.dataset.p);saveS();rebuild();
+  }else if(t.id==='showpay'){ui.showPay=t.checked;render();
+  }else if(t.dataset.ov){
+    const k=t.dataset.k,o=OV[k]=OV[k]||{};
+    if(t.dataset.ov==='breakMin')o.breakMin=Math.max(0,Number(t.value)||0);
+    else if(['pmode','pst','pen'].includes(t.dataset.ov)){
+      const u=t.dataset.u,sh=ALL.find(s=>s.key===k);o.prem=o.prem||{};
+      if(t.dataset.ov==='pmode'){if(t.value==='default')delete o.prem[u];else o.prem[u]=Object.assign({st:fmtT(sh.start),en:fmtT(sh.end)},o.prem[u],{mode:t.value})}
+      else if(o.prem[u])o.prem[u][t.dataset.ov==='pst'?'st':'en']=t.value;
+    }else{o.tags=o.tags||[];const g=t.dataset.tag;o.tags=t.checked?[...new Set([...o.tags,g])]:o.tags.filter(x=>x!==g);
+      if(!t.checked){const sh=SHIFTS.find(s=>s.key===k);if(sh&&sh.tags.includes(g))ui.msg='That tag comes from the calendar event text; remove it there.'}}
+    saveO();rebuild();
+  }else if(t.dataset.f){
+    const [id,field]=t.dataset.f.split('.'),f=id==='wi'?ui.wi:ui.ps;
+    if(field==='tag')f.tags=t.checked?[...new Set([...f.tags,t.dataset.tag])]:f.tags.filter(x=>x!==t.dataset.tag);
+    else f[field]=t.value;
+    render();
+  }else if(t.id==='icsfile'&&t.files[0]){
+    t.files[0].text().then(tx=>{ingest(parseICS(tx),'ics');ui.msg=`Loaded ${SHIFTS.length} shift(s) from file.`;render()});
+  }else if(t.id==='impfile'&&t.files[0]){
+    t.files[0].text().then(tx=>{try{const j=JSON.parse(tx);lsSet(LS,JSON.stringify(j));S=loadS();rebuild();ui.msg='Settings imported.'}catch(err){ui.msg='Import failed: '+err.message}render()});
+  }
+});
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act,i=+b.dataset.i,k=b.dataset.k;
+  const guard=async fn=>{try{await fn()}catch(err){ui.msg=err.message;render()}};
+  switch(a){
+    case 'tab':ui.tab=k;ui.msg='';break;
+    case 'poff':ui.off=+b.dataset.d===0?0:ui.off+ +b.dataset.d;break;
+    case 'mnav':ui.moff=+b.dataset.d===0?0:ui.moff+ +b.dataset.d;break;
+    case 'goto':{const s=ALL.find(x=>x.key===k);if(s){ui.off=periodOfDay(dayNum(s.start)).i-periodOfDay(dayNum(new Date())).i;ui.open=k;ui.tab='pay'}break}
+    case 'ics':exportICS(b.dataset.pay==='1');return;
+    case 'open':ui.open=ui.open===k?null:k;break;
+    case 'sample':{const base=periodInfo();const mk=(d,st,en,t)=>{const day=new Date((base.start+d)*864e5);const dt=new Date(day.getUTCFullYear(),day.getUTCMonth(),day.getUTCDate());const s=new Date(dt.getTime()+st*36e5),n=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate(),en,0);if(n<=s)n.setDate(n.getDate()+1);return {key:'s'+d,uid:'s'+d,start:s,end:n,breakMin:S.breakMin,tags:[],baseTitle:t,src:'sample'}};
+      SHIFTS=[...SHIFTS.filter(s=>s.src!=='sample'),mk(0,7,19,'D'),mk(1,7,19,'D'),mk(2,19,7,'N'),mk(4,19,7,'N'),mk(5,19,7,'N')];rebuild();return}
+    case 'editprem':ui.edit=ui.edit===i?null:i;break;
+    case 'closeedit':ui.edit=null;break;
+    case 'addprem':S.premiums.push({id:'',uid:'p'+Math.random().toString(36).slice(2,8),name:'New premium',on:true,type:'perHour',history:[{from:today(),value:''}],when:{kind:'always'},appliesOT:false,stacking:'add',regularOnly:false,areaOnly:false,status:'verify',notes:'',changed:today()});ui.edit=S.premiums.length-1;saveS();rebuild();return;
+    case 'delprem':if(confirm('Delete this premium?')){S.premiums.splice(i,1);ui.edit=null;saveS();rebuild()}return;
+    case 'resetprem':{const id=S.premiums[i].id;S.premiums[i]=Object.assign(clone(PRESET.find(x=>x.id===id)),{uid:id})}saveS();rebuild();return;
+    case 'addhist':S.premiums[i].history.push({from:today(),value:''});saveS();break;
+    case 'delhist':S.premiums[i].history.splice(+b.dataset.k,1);saveS();rebuild();return;
+    case 'addwin':S.premiums[i].when.windows.push({sd:5,st:'23:00',ed:6,et:'07:00'});saveS();break;
+    case 'delwin':S.premiums[i].when.windows.splice(+b.dataset.k,1);saveS();rebuild();return;
+    case 'addother':S.ded.other.push({name:'',type:'flat',value:''});saveS();break;
+    case 'delother':S.ded.other.splice(+k,1);saveS();break;
+    case 'addbase':S.baseHistory.push({from:today(),value:''});saveS();break;
+    case 'delbase':S.baseHistory.splice(+k,1);saveS();rebuild();return;
+    case 'export':{const u=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'})),l=document.createElement('a');l.href=u;l.download='bc-pay-settings.json';l.click();URL.revokeObjectURL(u);return}
+    case 'resetall':if(confirm('Reset all settings and shift overrides on this device?')){S=defaults();OV={};saveS();saveO();rebuild()}return;
+    case 'saveCheck':{const f=ui.ps,r=calcShift(manualShift(f),S,new Map());if(num(f.paid)==null){ui.msg='Enter the paid amount first.';break}let c=[];try{c=JSON.parse(lsGet(LSC,'[]'))}catch(x){}c.unshift({date:f.date,st:f.st,en:f.en,paid:Number(f.paid),est:r.total});lsSet(LSC,JSON.stringify(c.slice(0,20)));break}
+    case 'icsurl':return guard(async()=>{const u=$('#icsurl').value.trim();lsSet(LSI,u);ui.msg='Fetching…';render();try{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);ingest(parseICS(await r.text()),'ics');ui.msg=`Loaded ${SHIFTS.length} shift(s).`}catch(err){ui.msg='Could not fetch the link ('+err.message+'). This is usually CORS; download the .ics file and upload it instead.'}render()});
+    case 'gconnect':return guard(async()=>{await gConnect();ui.msg='Connected to Google.';await gRead();ui.msg=`Connected. Loaded ${SHIFTS.filter(s=>s.src==='google').length} shift(s).`;render()});
+    case 'gread':return guard(async()=>{if(!token)await gConnect();await gRead();ui.msg=`Loaded ${SHIFTS.filter(s=>s.src==='google').length} shift(s).`;render()});
+    case 'writeAll':return guard(async()=>{if(!token)await gConnect();await previewWrites(ALL.filter(s=>s.src==='google'),'Preview: write pay to calendar')});
+    case 'resync':return guard(async()=>{if(!token)await gConnect();await previewWrites(ALL.filter(s=>s.src==='google'),'Preview: re-write updated shifts')});
+    case 'writeOne':return guard(async()=>{if(!token)await gConnect();await previewWrites(ALL.filter(s=>s.key===k),'Preview: write this shift')});
+    case 'undo':return guard(async()=>{if(!confirm(S.write.mode==='companion'?'Delete all Pay-calendar events created by this app?':'Restore original descriptions on events this app edited?'))return;if(!token)await gConnect();ui.msg='Undoing…';render();ui.msg=`Undid ${await undoAll()} event(s).`;render()});
+    case 'modalno':ui.modal=null;break;
+    case 'modalok':{const m=ui.modal;ui.modal=null;render();if(m.ok)await m.ok();return}
+  }
+  render();
+});
+if(lsGet('bcpay.firstrun',null)==null){lsSet('bcpay.firstrun','1');ui.tab='set';ui.msg='Welcome. Start by entering your base hourly rate, status and pay period start date below, then import your calendar.'}
+rebuild();window.__ok=true;
+</script>
+</body>
+</html>
